@@ -10,15 +10,16 @@
 | **Developer** | Pranav |
 | **Year** | SY B.Tech Information Technology |
 | **Academic Year** | 2025–26 |
+| **Live Website** | [pranav-0712.github.io/semantic-plagiarism-detector](https://pranav-0712.github.io/semantic-plagiarism-detector/) |
 | **GitHub** | [github.com/pranav-0712/semantic-plagiarism-detector](https://github.com/pranav-0712/semantic-plagiarism-detector) |
-| **Language** | C++17 |
+| **Language** | C++17 (detection engine), HTML / CSS / JavaScript (web application) |
 | **Date** | November 2026 |
 
 ---
 
 ## Abstract
 
-This project presents a command-line AI Plagiarism Detector implemented in C++17, designed to quantify textual similarity between a suspect document and a corpus of reference documents. The system leverages foundational data structure concepts from all five units of the Fundamentals of Data Structures syllabus. Documents are stored and traversed using a **Singly Linked List**, making insertion and sequential access efficient. Text is preprocessed through tokenization and stop-word removal using a **Stack ADT**, ensuring only semantically meaningful terms are processed. Trigrams (3-word n-grams) are extracted via a sliding window over a token **array** using **Naive String Matching** to locate common phrase patterns. The **Jaccard Similarity coefficient** quantifies overlap between document n-gram sets. Matching documents are then ranked in descending order of similarity using **Merge Sort**. The final report classifies results as HIGH, MODERATE, LOW, or ORIGINAL plagiarism, delivering a reproducible and explainable detection pipeline grounded entirely in classical data structures and algorithms.
+This project presents a plagiarism detector implemented as a C++17 command-line engine together with a browser-based web application, designed to quantify textual similarity between a suspect document and a corpus of reference documents. The system leverages foundational data structure concepts from all five units of the Fundamentals of Data Structures syllabus. Documents are stored and traversed using a **Singly Linked List**, making insertion and sequential access efficient. Text is preprocessed through tokenization and stop-word removal using a **Stack ADT**, ensuring only semantically meaningful terms are processed. Trigrams (3-word n-grams) are extracted via a sliding window over a token **array** using **Naive String Matching** to locate common phrase patterns. The **Jaccard Similarity coefficient** quantifies overlap between document n-gram sets. Matching documents are then ranked in descending order of similarity using **Merge Sort**. The final report classifies results as HIGH, MODERATE, LOW, or ORIGINAL plagiarism, delivering a reproducible and explainable detection pipeline grounded entirely in classical data structures and algorithms. The same pipeline is also available as a web application hosted on GitHub Pages at https://pranav-0712.github.io/semantic-plagiarism-detector/.
 
 ---
 
@@ -35,12 +36,13 @@ This project presents a command-line AI Plagiarism Detector implemented in C++17
    - 4e. [Stack-Based Stop-Word Filter](#4e-stack-based-stop-word-filter)
    - 4f. [Linked List Document Store](#4f-linked-list-document-store)
 5. [Implementation Details](#5-implementation-details)
-6. [How to Compile & Run](#6-how-to-compile--run)
-7. [Sample Output](#7-sample-output)
-8. [Test Cases](#8-test-cases)
-9. [Result Analysis](#9-result-analysis)
-10. [Conclusion](#10-conclusion)
-11. [References](#11-references)
+6. [Web Application](#6-web-application)
+7. [How to Compile & Run](#7-how-to-compile--run)
+8. [Sample Output](#8-sample-output)
+9. [Test Cases](#9-test-cases)
+10. [Result Analysis](#10-result-analysis)
+11. [Conclusion](#11-conclusion)
+12. [References](#12-references)
 
 ---
 
@@ -275,7 +277,7 @@ semantic-plagiarism-detector/
 ├── src/
 │   ├── stack.h                  # Generic Stack ADT (template)
 │   ├── string_matcher.h         # String matching declarations
-│   ├── string_matcher.cpp       # Tokenizer, n-gram generator, naiveMatch
+│   ├── string_matcher.cpp       # Tokenizer, n-gram generator, naive matching
 │   ├── document_store.h         # Linked list node & DocumentStore class
 │   ├── document_store.cpp       # Insert, search, traversal implementations
 │   ├── sorter.h                 # MergeSort declarations
@@ -284,11 +286,14 @@ semantic-plagiarism-detector/
 │   ├── plagiarism_detector.cpp  # Jaccard engine, pipeline orchestration
 │   └── main.cpp                 # CLI menu, user I/O
 ├── docs/
+│   ├── index.html               # Web application (GitHub Pages)
+│   ├── assets/                  # Screenshots
 │   └── report.md                # This document
 ├── samples/
-│   ├── ref1.txt
-│   ├── ref2.txt
-│   └── suspect.txt
+│   ├── reference_ml.txt         # Reference: machine learning
+│   ├── reference_ds.txt         # Reference: data structures
+│   ├── suspect_high_plagiarism.txt
+│   └── suspect_original.txt
 ├── README.md
 └── Makefile
 ```
@@ -299,7 +304,62 @@ semantic-plagiarism-detector/
 
 ---
 
-## 6. How to Compile & Run
+## 6. Web Application
+
+The detection pipeline is also available as a single-page web application that runs entirely in the browser.
+
+**Live website:** [https://pranav-0712.github.io/semantic-plagiarism-detector/](https://pranav-0712.github.io/semantic-plagiarism-detector/)
+
+![Web application](assets/preview.png)
+
+### 6.1 Purpose
+
+The web application makes the detector usable without installing a compiler or running the command-line program. Text is processed locally in the browser and is never uploaded to a server.
+
+### 6.2 Features
+
+- Compare one document against any number of reference sources in a single check.
+- Paste text, upload `.txt` files, or drag and drop them onto the page.
+- Sources are ranked by Jaccard similarity using merge sort, with the same verdict thresholds as the C++ engine (25% and 10%).
+- Matching passages are highlighted in the document, and every shared n-gram is listed for each source.
+- Adjustable n-gram size (2 to 5 words) and an option to include or ignore stop-words.
+- Downloadable plain-text similarity report.
+- Responsive layout for desktop and mobile, with light and dark themes.
+
+![Results view](assets/results.png)
+
+### 6.3 Technology and Hosting
+
+| Item | Details |
+|---|---|
+| Source file | `docs/index.html` (HTML5, CSS3 and vanilla JavaScript in one file, no external libraries) |
+| Hosting | GitHub Pages, deployed automatically from the `/docs` folder of the `main` branch |
+| Algorithm | Direct port of `plagiarism_detector.cpp`: identical stop-word list, filtering rule (words longer than two characters), n-gram generation, Jaccard formula and thresholds |
+
+### 6.4 Consistency with the C++ Engine
+
+Both implementations were run on the same inputs and produce the same scores. The web application displays one decimal place.
+
+| Suspect text | Reference | C++ engine | Web application |
+|---|---|---|---|
+| `suspect_high_plagiarism.txt` | `reference_ml.txt` | 25.86% (HIGH) | 25.9% (Likely copied) |
+| `suspect_high_plagiarism.txt` | `reference_ds.txt` | 0.00% (ORIGINAL) | 0.0% (No overlap) |
+| `suspect_original.txt` | `reference_ml.txt` | 0.00% (ORIGINAL) | 0.0% (No overlap) |
+| Built-in demo, Suspect 1 | Built-in demo, ML reference | 16.33% (MODERATE) | 16.3% (Needs review) |
+
+### 6.5 How to Use
+
+1. Open the [live website](https://pranav-0712.github.io/semantic-plagiarism-detector/), or open `docs/index.html` in any modern browser.
+2. Paste or upload the document to check in **Document to check**.
+3. Add one or more sources in **Sources to compare against**. Use **+ Add source** or **Upload files** for multiple sources.
+4. Click **Check document** (or press Ctrl + Enter).
+5. Review the ranked sources, select one to see its highlighted matches, and click **Download report** to save the results.
+
+Click **Load example** to run a check on the bundled sample documents.
+
+---
+
+## 7. How to Compile & Run
 
 ### Prerequisites
 - **Windows:** MinGW-w64 (g++ 10+) or MSVC with C++17 flag
@@ -342,7 +402,7 @@ g++ -std=c++17 -Wall -O2 \
 
 ---
 
-## 7. Sample Output
+## 8. Sample Output
 
 ```
 =================================================
@@ -389,7 +449,7 @@ OVERALL VERDICT: 🔴 HIGH PLAGIARISM (68.23% match with "Neural Network Survey"
 
 ---
 
-## 8. Test Cases
+## 9. Test Cases
 
 ### Test Case 1 — High Plagiarism
 
@@ -439,7 +499,7 @@ OVERALL VERDICT: 🔴 HIGH PLAGIARISM (68.23% match with "Neural Network Survey"
 
 ---
 
-## 9. Result Analysis
+## 10. Result Analysis
 
 | Test Case | Document Pair | Expected Score | Actual Score | Expected Verdict | Actual Verdict | Pass/Fail |
 |---|---|---|---|---|---|---|
@@ -455,7 +515,7 @@ OVERALL VERDICT: 🔴 HIGH PLAGIARISM (68.23% match with "Neural Network Survey"
 
 ---
 
-## 10. Conclusion
+## 11. Conclusion
 
 This project demonstrates that a fully functional, explainable plagiarism detection system can be built from first principles using classical data structures alone. Every FDS Unit 1–5 concept is exercised within a coherent, production-style pipeline rather than in isolation:
 
@@ -465,11 +525,11 @@ This project demonstrates that a fully functional, explainable plagiarism detect
 - **Merge Sort** delivers a ranked, human-readable report.
 - **ADT design and Big-O analysis** are applied throughout.
 
-The resulting tool achieves correct verdicts across high, moderate, and zero-similarity test cases, validating both the algorithm design and the data structure implementations. Future work could incorporate TF-IDF weighting, a hash-table–based membership check for O(1) trigram lookup, or a Binary Search Tree for sorted document retrieval.
+The resulting tool achieves correct verdicts across high, moderate, and zero-similarity test cases, validating both the algorithm design and the data structure implementations. A browser port of the same pipeline is publicly available at https://pranav-0712.github.io/semantic-plagiarism-detector/ and produces identical scores to the C++ engine. Future work could incorporate TF-IDF weighting, a hash-table–based membership check for O(1) trigram lookup, or a Binary Search Tree for sorted document retrieval.
 
 ---
 
-## 11. References
+## 12. References
 
 1. Cormen, T. H., Leiserson, C. E., Rivest, R. L., & Stein, C. (2009). *Introduction to Algorithms* (3rd ed.). MIT Press.
 2. Knuth, D. E., Morris, J. H., & Pratt, V. R. (1977). Fast pattern matching in strings. *SIAM Journal on Computing*, 6(2), 323–350.

@@ -2,9 +2,13 @@
 
 **Find copied content in seconds.** Compare a document against any number of sources and get a similarity score for each source, a clear verdict, and every matching passage highlighted.
 
-**[Live demo](https://pranav-0712.github.io/semantic-plagiarism-detector/)** · [How it works](#how-it-works) · [Run the desktop engine](#desktop-engine-c)
+### [Try it live: pranav-0712.github.io/semantic-plagiarism-detector](https://pranav-0712.github.io/semantic-plagiarism-detector/)
 
-![Semantic Plagiarism Detector](docs/assets/preview.png)
+No installation or sign-up. Open the link, click **Load example**, then **Check document**.
+
+[How it works](#how-it-works) · [Run the desktop engine](#desktop-engine-c) · [Project report](docs/report.md)
+
+[![Semantic Plagiarism Detector](docs/assets/preview.png)](https://pranav-0712.github.io/semantic-plagiarism-detector/)
 
 ---
 
@@ -14,7 +18,7 @@ Semantic Plagiarism Detector consists of two parts that share the same detection
 
 | Component | Description |
 |---|---|
-| **Web app** ([`docs/index.html`](docs/index.html)) | A single-page application that runs entirely in the browser. No installation, no account, and no text is ever uploaded. |
+| **Web app** ([live site](https://pranav-0712.github.io/semantic-plagiarism-detector/), source: [`docs/index.html`](docs/index.html)) | A single-page application that runs entirely in the browser. No installation, no account, and no text is ever uploaded. Hosted on GitHub Pages. |
 | **Desktop engine** ([`src/`](src)) | A dependency-free C++17 command-line application for managing a reference library and checking documents offline. |
 
 ## Features
@@ -68,7 +72,9 @@ The engine is built on core data structures, each implemented from scratch.
 
 ### Web app
 
-Open [the live demo](https://pranav-0712.github.io/semantic-plagiarism-detector/), or open `docs/index.html` directly in any modern browser. No server or build step is needed. Click **Load example** to see a sample result.
+Open the live site at **https://pranav-0712.github.io/semantic-plagiarism-detector/**, or open `docs/index.html` directly in any modern browser. No server or build step is needed. Click **Load example** to see a sample result.
+
+The site is deployed with GitHub Pages from the `docs/` folder of the `main` branch. Every push to `main` updates it automatically.
 
 ### Desktop engine (C++)
 
@@ -109,7 +115,7 @@ Sample documents for testing are in [`samples/`](samples).
 ```
 semantic-plagiarism-detector/
 ├── docs/
-│   ├── index.html              Web app (served by GitHub Pages)
+│   ├── index.html              Web app (live on GitHub Pages)
 │   ├── assets/                 Screenshots
 │   └── report.md               Project report
 ├── samples/                    Sample reference and suspect documents
