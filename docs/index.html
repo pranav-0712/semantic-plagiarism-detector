@@ -181,6 +181,23 @@
     .options label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
     select { font-size: .86rem; padding: 6px 10px; }
     input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--brand); }
+    .spinner { width: 16px; height: 16px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; display: inline-block; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn[disabled] { cursor: progress; opacity: .9; }
+    .loading { margin-top: 24px; padding: 28px 24px; scroll-margin-top: 84px; }
+    .loading-row { display: flex; align-items: center; gap: 12px; font-weight: 600; margin-bottom: 16px; }
+    .loading-row .spinner { color: var(--brand); width: 18px; height: 18px; }
+    .loading-step { color: var(--text-3); font-weight: 500; font-size: .9rem; margin-left: auto; font-variant-numeric: tabular-nums; }
+    .progress { height: 6px; background: var(--bg-subtle); border-radius: 3px; overflow: hidden; }
+    .progress span { display: block; height: 100%; width: 0; background: var(--brand); border-radius: 3px; transition: width .35s ease; }
+    .loading-list { list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 16px; font-size: .84rem; color: var(--text-3); }
+    .loading-list li { display: flex; align-items: center; gap: 8px; }
+    .loading-list li::before { content: ''; width: 8px; height: 8px; border-radius: 50%; border: 2px solid var(--border-strong); flex-shrink: 0; }
+    .loading-list li.active { color: var(--text); font-weight: 600; }
+    .loading-list li.active::before { border-color: var(--brand); }
+    .loading-list li.done { color: var(--text-2); }
+    .loading-list li.done::before { background: var(--low); border-color: var(--low); }
+    @media (max-width: 600px) { .loading-list { grid-template-columns: 1fr 1fr; } }
     .form-error { color: var(--high); font-size: .88rem; padding: 0 20px 14px; background: var(--bg-subtle); border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
     .app-foot.has-error { border-radius: 0; }
 
@@ -407,6 +424,18 @@
         <button class="btn btn-primary btn-lg" id="btnCheck" type="button">Check document <span class="kbd">Ctrl + Enter</span></button>
       </div>
       <div class="form-error" id="formError" role="alert" hidden></div>
+    </div>
+
+    <!-- Analysis in progress -->
+    <div class="card loading" id="loading" aria-live="polite" hidden>
+      <div class="loading-row"><span class="spinner" aria-hidden="true"></span><span id="loadingText">Analysing document</span><span class="loading-step" id="loadingStep"></span></div>
+      <div class="progress"><span id="progressBar"></span></div>
+      <ol class="loading-list" id="loadingList">
+        <li>Cleaning text</li>
+        <li>Splitting into phrases</li>
+        <li>Matching against sources</li>
+        <li>Scoring and ranking</li>
+      </ol>
     </div>
 
     <!-- Results -->
@@ -823,7 +852,11 @@
   /* ------------------------------------------------------------------
    * Run a check
    * ------------------------------------------------------------------ */
+  let busy = false;
+  const STEP_MS = 400;   // 4 steps, about 1.6 seconds in total
+
   function runCheck() {
+    if (busy) return;
     const docText = $('docText').value;
     const n = parseInt($('optN').value, 10);
     const ignoreCommon = $('optStop').checked;
@@ -841,11 +874,50 @@
 
     const results = mergeSort(sources.map(s => compare(docNG, s, n, ignoreCommon)));
     state.run = { docText, docName: state.docName, n, ignoreCommon, results, date: new Date() };
-    renderResults();
+    showProgress(sources.length, renderResults);
+  }
+
+  // Short analysis sequence before the results are revealed.
+  function showProgress(sourceCount, done) {
+    busy = true;
+    const btn = $('btnCheck');
+    const btnHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner" aria-hidden="true"></span> Checking…';
+
+    const steps = Array.from(document.querySelectorAll('#loadingList li'));
+    const labels = ['Cleaning text', 'Splitting into phrases', 'Matching against ' + plural(sourceCount, 'source'), 'Scoring and ranking'];
+    $('results').hidden = true;
+    $('loading').hidden = false;
+    $('progressBar').style.transition = 'none';
+    $('progressBar').style.width = '0%';
+    void $('progressBar').offsetWidth;
+    $('progressBar').style.transition = '';
+    $('loading').scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    let i = 0;
+    function tick() {
+      steps.forEach((li, j) => { li.className = j < i ? 'done' : j === i ? 'active' : ''; });
+      if (i < steps.length) {
+        $('loadingText').textContent = labels[i] + '…';
+        $('loadingStep').textContent = 'Step ' + (i + 1) + ' of ' + steps.length;
+        $('progressBar').style.width = ((i + 1) / steps.length * 100) + '%';
+        i++;
+        setTimeout(tick, STEP_MS);
+      } else {
+        $('loading').hidden = true;
+        btn.disabled = false;
+        btn.innerHTML = btnHtml;
+        busy = false;
+        done();
+      }
+    }
+    tick();
   }
 
   function renderResults() {
     const run = state.run;
+    if (!run) return;
     const top = run.results[0];
     const v = verdict(top.sim);
     $('results').hidden = false;
@@ -1035,6 +1107,7 @@ divide-and-conquer algorithms with average time complexity of O(n log n).`]
     state.active = state.sources[0].id;
     state.run = null;
     $('results').hidden = true;
+    if (!busy) $('loading').hidden = true;
     renderTabs(); syncEditor(); showError('');
   }
 
