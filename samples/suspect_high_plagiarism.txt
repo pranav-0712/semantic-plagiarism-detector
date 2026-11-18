@@ -1,0 +1,13 @@
+Machine learning is a branch of artificial intelligence that enables systems
+to learn from data and improve their performance over time without being
+explicitly programmed. It uses algorithms to parse data and make informed
+decisions. Machine learning is applied in fields like computer vision and
+natural language processing.
+
+Deep learning, a subset of machine learning, uses neural networks with many
+layers to model complex patterns. These deep neural networks are inspired by
+the structure of the human brain, and deep learning has achieved remarkable
+results in image recognition and language translation.
+
+This technology has completely transformed modern computing and continues to
+shape the future of automation and intelligent systems across all industries.

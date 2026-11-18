@@ -1,0 +1,14 @@
+Quantum computing is an emerging technology that harnesses the principles of
+quantum mechanics to perform computations that would be infeasible for
+classical computers. Unlike traditional bits that exist as either 0 or 1,
+quantum bits or qubits can exist in a superposition of both states simultaneously.
+
+This property, combined with quantum entanglement and interference, allows
+quantum computers to process vast amounts of information in parallel. Quantum
+algorithms such as Shor's algorithm for integer factorisation and Grover's
+algorithm for database search offer exponential speedups over classical approaches.
+
+Quantum computing holds promise for applications in cryptography, drug discovery,
+materials science, and optimisation problems. Companies like IBM, Google, and
+Microsoft are racing to build practical quantum computers with sufficient qubits
+and low error rates to achieve quantum advantage.

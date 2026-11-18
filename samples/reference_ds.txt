@@ -1,0 +1,28 @@
+Data structures are specialised formats for organising, processing, retrieving
+and storing data. They make it easier to manipulate data efficiently. Common
+data structures include arrays, linked lists, stacks, queues, trees and graphs.
+Choosing the right data structure for a problem is key to writing efficient algorithms.
+
+An array is a collection of elements stored at contiguous memory locations.
+It is the simplest and most widely used data structure. Arrays support random
+access in O(1) time but insertions and deletions take O(n) time. Static arrays
+have a fixed size, while dynamic arrays can resize themselves at runtime.
+
+A linked list is a linear data structure where each element, called a node,
+contains data and a pointer to the next node. Unlike arrays, linked lists do
+not require contiguous memory. Insertion and deletion at the head of a linked
+list take O(1) time. Traversal from the head to any node takes O(n) time.
+
+A stack is a linear data structure that follows the Last-In-First-Out (LIFO)
+principle. The push operation adds an element to the top, and the pop operation
+removes the top element. Stacks are used in function call management, expression
+evaluation, and backtracking algorithms.
+
+A queue is a linear data structure that follows the First-In-First-Out (FIFO)
+principle. Elements are added at the rear and removed from the front. Queues
+are widely used in scheduling, breadth-first search, and buffering applications.
+
+Sorting algorithms arrange elements of a list in a specific order. Common
+sorting algorithms include bubble sort, insertion sort, selection sort, merge
+sort, quick sort, and heap sort. Merge sort and quick sort are efficient
+divide-and-conquer algorithms with average time complexity of O(n log n).

@@ -1,0 +1,27 @@
+# Compiled binaries
+*.exe
+*.out
+*.o
+*.obj
+plagiarism_detector
+
+# Build directories
+build/
+out/
+
+# IDE files
+.vscode/
+.idea/
+*.code-workspace
+*.suo
+*.user
+
+# Windows files
+Thumbs.db
+desktop.ini
+
+# macOS files
+.DS_Store
+
+# Log files
+*.log

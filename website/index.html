@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Plagiarism Detector | FDS Mini Project</title>
+  <style>
+    /* ── Color Variables ───────────────────────────────────────────── */
+    :root {
+      --bg-primary:   #0d1117;
+      --bg-secondary: #161b22;
+      --bg-card:      #1c2333;
+      --bg-card-hover:#212d3f;
+      --border:       #30363d;
+      --accent-blue:  #58a6ff;
+      --accent-purple:#bc8cff;
+      --accent-green: #3fb950;
+      --accent-yellow:#d29922;
+      --accent-red:   #f85149;
+      --text-primary: #e6edf3;
+      --text-secondary:#8b949e;
+      --text-muted:   #484f58;
+      --gradient:     linear-gradient(135deg, #1a237e 0%, #4a148c 50%, #0d47a1 100%);
+      --glow-blue:    0 0 20px rgba(88,166,255,0.25);
+      --glow-purple:  0 0 20px rgba(188,140,255,0.25);
+      --radius:       12px;
+      --radius-lg:    18px;
+    }
+
+    /* ── Reset & Base ──────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+    a { color: var(--accent-blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Utility ───────────────────────────────────────────────────── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+    .section-title {
+      font-size: 1.9rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 10px;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .section-sub {
+      text-align: center;
+      color: var(--text-secondary);
+      margin-bottom: 48px;
+      font-size: 0.95rem;
+    }
+    section { padding: 80px 0; }
+    section:nth-child(even) { background: var(--bg-secondary); }
+
+    /* ── Nav ───────────────────────────────────────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13,17,23,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 0;
+    }
+    nav .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .nav-logo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .nav-links { display: flex; gap: 24px; list-style: none; }
+    .nav-links a {
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--accent-blue); text-decoration: none; }
+    .nav-badge {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    /* ── Hero ──────────────────────────────────────────────────────── */
+    #hero {
+      min-height: 90vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-primary);
+      padding: 100px 24px 80px;
+    }
+    #hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 0%, rgba(88,166,255,0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 80% 60%, rgba(188,140,255,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      display: inline-block;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 16px;
+      font-size: 0.8rem;
+      color: var(--accent-blue);
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 24px;
+    }
+    .hero-title {
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+    .hero-title span {
+      background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-subtitle {
+      font-size: 1.15rem;
+      color: var(--text-secondary);
+      max-width: 560px;
+      margin: 0 auto 36px;
+    }
+    .hero-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 48px;
+    }
+    .tag {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+    }
+    .hero-cta {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      color: #fff;
+      padding: 14px 36px;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: transform .2s, box-shadow .2s;
+      box-shadow: 0 4px 24px rgba(88,166,255,0.3);
+    }
+    .hero-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(88,166,255,0.45);
+      text-decoration: none;
+      color: #fff;
+    }
+    .hero-stats {
+      display: flex;
+      gap: 40px;
+      justify-content: center;
+      margin-top: 56px;
+      flex-wrap: wrap;
+    }
+    .stat { text-align: center; }
+    .stat-num {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label { font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px; }
+
+    /* ── How It Works ──────────────────────────────────────────────── */
+    .flow-steps {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0;
+      justify-content: center;
+      align-items: stretch;
+      position: relative;
+    }
+    .flow-step {
+      flex: 1 1 160px;
+      max-width: 200px;
+      text-align: center;
+      position: relative;
+    }
+    .flow-connector {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: var(--text-muted);
+      padding-top: 36px;
+      flex: 0 0 32px;
+    }
+    @media (max-width: 700px) {
+      .flow-connector { display: none; }
+      .flow-steps { gap: 16px; }
+      .flow-step { max-width: 100%; }
+    }
+    .flow-icon {
+      width: 64px; height: 64px;
+      border-radius: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem;
+      margin: 0 auto 14px;
+      box-shadow: var(--glow-blue);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .flow-step:hover .flow-icon {
+      transform: translateY(-4px);
+      box-shadow: var(--glow-purple);
+    }
+    .flow-num {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--accent-blue);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 6px;
+    }
+    .flow-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .flow-desc { font-size: 0.78rem; color: var(--text-secondary); }
+
+    /* ── Data Structures Cards ─────────────────────────────────────── */
+    .ds-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+    }
+    .ds-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px 22px;
+      transition: transform .2s, border-color .2s, box-shadow .2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .ds-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      opacity: 0;
+      transition: opacity .2s;
+    }
+    .ds-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--accent-blue);
+      box-shadow: var(--glow-blue);
+      background: var(--bg-card-hover);
+    }
+    .ds-card:hover::before { opacity: 1; }
+    .ds-icon { font-size: 2.4rem; margin-bottom: 14px; }
+    .ds-unit {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--accent-purple);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 6px;
+    }
+    .ds-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .ds-desc {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    .ds-complexity {
+      display: inline-block;
+      background: rgba(88,166,255,0.12);
+      border: 1px solid rgba(88,166,255,0.3);
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--accent-blue);
+      font-family: 'Courier New', monospace;
+    }
+
+    /* ── Live Demo ─────────────────────────────────────────────────── */
+    .demo-wrapper {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 36px;
+      max-width: 900px;
+      margin: 0 auto;
+      box-shadow: 0 8px 48px rgba(0,0,0,0.4);
+    }
+    .demo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 640px) { .demo-grid { grid-template-columns: 1fr; } }
+    .textarea-wrapper { display: flex; flex-direction: column; gap: 8px; }
+    .textarea-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text-secondary);
+    }
+    textarea {
+      width: 100%;
+      height: 160px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-primary);
+      font-size: 0.88rem;
+      padding: 14px;
+      resize: vertical;
+      font-family: inherit;
+      transition: border-color .2s;
+      outline: none;
+    }
+    textarea:focus { border-color: var(--accent-blue); box-shadow: 0 0 0 3px rgba(88,166,255,0.15); }
+    textarea::placeholder { color: var(--text-muted); }
+    .demo-controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+    .btn-analyze {
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 12px 32px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .15s;
+      box-shadow: 0 4px 20px rgba(88,166,255,0.3);
+    }
+    .btn-analyze:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(88,166,255,0.45); }
+    .btn-analyze:active { transform: translateY(0); }
+    .btn-clear {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 12px 24px;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: border-color .2s, color .2s;
+    }
+    .btn-clear:hover { border-color: var(--text-secondary); color: var(--text-primary); }
+    .btn-sample {
+      background: rgba(188,140,255,0.1);
+      color: var(--accent-purple);
+      border: 1px solid rgba(188,140,255,0.3);
+      border-radius: 50px;
+      padding: 12px 24px;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .btn-sample:hover { background: rgba(188,140,255,0.2); }
+
+    /* Results */
+    #results { display: none; }
+    .results-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .score-ring {
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      border: 4px solid var(--border);
+      flex-shrink: 0;
+      transition: border-color .4s;
+    }
+    .score-num { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+    .score-pct { font-size: 0.65rem; color: var(--text-secondary); }
+    .verdict-block { flex: 1; }
+    .verdict-badge {
+      display: inline-block;
+      border-radius: 20px;
+      padding: 6px 18px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .verdict-badge.original   { background: rgba(63,185,80,0.15);  color: var(--accent-green);  border: 1px solid rgba(63,185,80,0.4);  }
+    .verdict-badge.moderate   { background: rgba(210,153,34,0.15); color: var(--accent-yellow); border: 1px solid rgba(210,153,34,0.4); }
+    .verdict-badge.high       { background: rgba(248,81,73,0.15);  color: var(--accent-red);    border: 1px solid rgba(248,81,73,0.4);  }
+    .verdict-desc { font-size: 0.85rem; color: var(--text-secondary); }
+
+    .metrics-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .metric-card {
+      flex: 1 1 120px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      text-align: center;
+    }
+    .metric-val { font-size: 1.4rem; font-weight: 700; color: var(--accent-blue); }
+    .metric-lbl { font-size: 0.72rem; color: var(--text-secondary); margin-top: 2px; }
+
+    .matches-section h4 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+    .match-list { display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; }
+    .match-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.84rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .match-item .match-idx {
+      background: rgba(88,166,255,0.15);
+      color: var(--accent-blue);
+      border-radius: 4px;
+      padding: 1px 7px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .match-list::-webkit-scrollbar { width: 4px; }
+    .match-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .no-matches {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      padding: 24px;
+    }
+
+    /* ── Complexity Table ──────────────────────────────────────────── */
+    .table-wrapper {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    thead { background: var(--bg-card); }
+    thead th {
+      padding: 14px 20px;
+      text-align: left;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background .15s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--bg-card-hover); }
+    tbody td { padding: 13px 20px; color: var(--text-secondary); }
+    tbody td:first-child { color: var(--text-primary); font-weight: 600; }
+    .complexity-pill {
+      display: inline-block;
+      background: rgba(88,166,255,0.1);
+      border: 1px solid rgba(88,166,255,0.25);
+      border-radius: 6px;
+      padding: 2px 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.82rem;
+      color: var(--accent-blue);
+      font-weight: 600;
+    }
+    .complexity-pill.red {
+      background: rgba(248,81,73,0.1);
+      border-color: rgba(248,81,73,0.25);
+      color: var(--accent-red);
+    }
+    .complexity-pill.green {
+      background: rgba(63,185,80,0.1);
+      border-color: rgba(63,185,80,0.25);
+      color: var(--accent-green);
+    }
+
+    /* ── Footer ────────────────────────────────────────────────────── */
+    footer {
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+      padding: 48px 24px;
+      text-align: center;
+    }
+    .footer-logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+    .footer-sub { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 24px; }
+    .footer-divider {
+      width: 48px; height: 2px;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+      border-radius: 2px;
+      margin: 0 auto 24px;
+    }
+    .footer-meta { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* ── Animations ────────────────────────────────────────────────── */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in { animation: fadeInUp .6s ease both; }
+    .fade-in-delay-1 { animation-delay: .1s; }
+    .fade-in-delay-2 { animation-delay: .2s; }
+    .fade-in-delay-3 { animation-delay: .3s; }
+
+    /* ── Responsive Nav ────────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .nav-links { display: none; }
+      .demo-wrapper { padding: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ──────────────────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-inner">
+    <span class="nav-logo">🔍 AI Plagiarism Detector</span>
+    <ul class="nav-links">
+      <li><a href="#how-it-works">How It Works</a></li>
+      <li><a href="#data-structures">Data Structures</a></li>
+      <li><a href="#demo">Live Demo</a></li>
+      <li><a href="#complexity">Complexity</a></li>
+    </ul>
+    <span class="nav-badge">FDS Mini Project</span>
+  </div>
+</nav>
+
+<!-- ── HERO ─────────────────────────────────────────────────────────── -->
+<section id="hero">
+  <div>
+    <div class="hero-eyebrow fade-in">FDS Mini Project · SY BTech IT · 2026</div>
+    <h1 class="hero-title fade-in fade-in-delay-1">
+      AI <span>Plagiarism</span><br/>Detector
+    </h1>
+    <p class="hero-subtitle fade-in fade-in-delay-2">
+      A data-structures-powered plagiarism analysis engine using naive string matching,
+      n-gram comparison, and sorted indexing — built from first principles.
+    </p>
+    <div class="hero-tags fade-in fade-in-delay-2">
+      <span class="tag">📊 Arrays</span>
+      <span class="tag">🔤 String Matching</span>
+      <span class="tag">🔃 Sorting</span>
+      <span class="tag">📚 Stack</span>
+      <span class="tag">🔗 Linked List</span>
+    </div>
+    <a href="#demo" class="hero-cta fade-in fade-in-delay-3">Try Live Demo →</a>
+    <div class="hero-stats fade-in fade-in-delay-3">
+      <div class="stat">
+        <div class="stat-num">5</div>
+        <div class="stat-label">FDS Concepts Used</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">O(n·m)</div>
+        <div class="stat-label">Core Matching</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">3-gram</div>
+        <div class="stat-label">N-gram Analysis</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Pure Vanilla JS</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ──────────────────────────────────────────────────── -->
+<section id="how-it-works">
+  <div class="container">
+    <h2 class="section-title">How It Works</h2>
+    <p class="section-sub">A five-step pipeline transforms raw text into a similarity verdict</p>
+
+    <div class="flow-steps">
+
+      <div class="flow-step">
+        <div class="flow-icon">📝</div>
+        <div class="flow-num">Step 01</div>
+        <div class="flow-name">Input &amp; Tokenize</div>
+        <div class="flow-desc">Raw text is split into word tokens stored in a dynamic Array.</div>
+      </div>
+
+      <div class="flow-connector">→</div>
+
+      <div class="flow-step">
+        <div class="flow-icon">🔤</div>
+        <div class="flow-num">Step 02</div>
+        <div class="flow-name">N-gram Extraction</div>
+        <div class="flow-desc">Trigrams (3-word sequences) are extracted as strings and pushed onto a Stack for processing.</div>
+      </div>
+
+      <div class="flow-connector">→</div>
+
+      <div class="flow-step">
+        <div class="flow-icon">🔃</div>
+        <div class="flow-num">Step 03</div>
+        <div class="flow-name">Sort &amp; Index</div>
+        <div class="flow-desc">N-grams are sorted alphabetically; binary-search-ready for fast lookup.</div>
+      </div>
+
+      <div class="flow-connector">→</div>
+
+      <div class="flow-step">
+        <div class="flow-icon">🔍</div>
+        <div class="flow-num">Step 04</div>
+        <div class="flow-name">Naive Matching</div>
+        <div class="flow-desc">Brute-force substring matching finds exact phrase occurrences in the suspect text.</div>
+      </div>
+
+      <div class="flow-connector">→</div>
+
+      <div class="flow-step">
+        <div class="flow-icon">📊</div>
+        <div class="flow-num">Step 05</div>
+        <div class="flow-name">Score &amp; Verdict</div>
+        <div class="flow-desc">Matched n-grams / total n-grams × 100 gives the similarity %, stored in a Linked List result chain.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── DATA STRUCTURES ───────────────────────────────────────────────── -->
+<section id="data-structures">
+  <div class="container">
+    <h2 class="section-title">Data Structures Used</h2>
+    <p class="section-sub">Every FDS concept has a concrete role in the plagiarism pipeline</p>
+
+    <div class="ds-grid">
+
+      <div class="ds-card">
+        <div class="ds-icon">📊</div>
+        <div class="ds-unit">Unit 1</div>
+        <div class="ds-name">Arrays</div>
+        <div class="ds-desc">
+          Stores tokenized words from both reference and suspect texts.
+          Used as the primary data container for all subsequent processing steps.
+        </div>
+        <span class="ds-complexity">O(n) traversal</span>
+      </div>
+
+      <div class="ds-card">
+        <div class="ds-icon">🔤</div>
+        <div class="ds-unit">Unit 2</div>
+        <div class="ds-name">Strings &amp; Naive Matching</div>
+        <div class="ds-desc">
+          Brute-force pattern search scans every position in suspect text.
+          Finds exact substring matches character by character.
+        </div>
+        <span class="ds-complexity">O(n · m)</span>
+      </div>
+
+      <div class="ds-card">
+        <div class="ds-icon">🔃</div>
+        <div class="ds-unit">Unit 3</div>
+        <div class="ds-name">Sorting</div>
+        <div class="ds-desc">
+          N-grams are sorted lexicographically to enable efficient deduplication
+          and faster set-intersection for similarity scoring.
+        </div>
+        <span class="ds-complexity">O(n log n)</span>
+      </div>
+
+      <div class="ds-card">
+        <div class="ds-icon">📚</div>
+        <div class="ds-unit">Unit 4</div>
+        <div class="ds-name">Stack</div>
+        <div class="ds-desc">
+          A LIFO stack accumulates trigrams during the sliding-window extraction
+          phase, enabling incremental n-gram building.
+        </div>
+        <span class="ds-complexity">O(1) push/pop</span>
+      </div>
+
+      <div class="ds-card">
+        <div class="ds-icon">🔗</div>
+        <div class="ds-unit">Unit 5</div>
+        <div class="ds-name">Linked List</div>
+        <div class="ds-desc">
+          Matched phrase results are stored as nodes in a singly linked list,
+          allowing dynamic result accumulation without pre-allocating space.
+        </div>
+        <span class="ds-complexity">O(1) insert</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── LIVE DEMO ─────────────────────────────────────────────────────── -->
+<section id="demo">
+  <div class="container">
+    <h2 class="section-title">Live Demo</h2>
+    <p class="section-sub">Paste two texts below and analyze their similarity in real time</p>
+
+    <div class="demo-wrapper">
+      <div class="demo-grid">
+        <div class="textarea-wrapper">
+          <label class="textarea-label">📄 Reference Text (Original)</label>
+          <textarea id="refText" placeholder="Paste the original / reference text here…"></textarea>
+        </div>
+        <div class="textarea-wrapper">
+          <label class="textarea-label">🔎 Suspect Text (To Check)</label>
+          <textarea id="suspText" placeholder="Paste the suspect / submitted text here…"></textarea>
+        </div>
+      </div>
+
+      <div class="demo-controls">
+        <button class="btn-analyze" onclick="analyze()">🔍 Analyze Similarity</button>
+        <button class="btn-sample" onclick="loadSample()">📋 Load Sample Texts</button>
+        <button class="btn-clear" onclick="clearAll()">✕ Clear</button>
+      </div>
+
+      <div id="results">
+        <div class="results-header">
+          <div class="score-ring" id="scoreRing">
+            <span class="score-num" id="scoreNum">0</span>
+            <span class="score-pct">%</span>
+          </div>
+          <div class="verdict-block">
+            <div id="verdictBadge" class="verdict-badge">—</div>
+            <div class="verdict-desc" id="verdictDesc"></div>
+          </div>
+        </div>
+
+        <div class="metrics-row">
+          <div class="metric-card">
+            <div class="metric-val" id="mTotalRef">—</div>
+            <div class="metric-lbl">Reference N-grams</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val" id="mTotalSusp">—</div>
+            <div class="metric-lbl">Suspect N-grams</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val" id="mMatched">—</div>
+            <div class="metric-lbl">Matched N-grams</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val" id="mExact">—</div>
+            <div class="metric-lbl">Exact Matches</div>
+          </div>
+        </div>
+
+        <div class="matches-section">
+          <h4>Matched Phrases</h4>
+          <div class="match-list" id="matchList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── COMPLEXITY TABLE ──────────────────────────────────────────────── -->
+<section id="complexity">
+  <div class="container">
+    <h2 class="section-title">Algorithm Complexity</h2>
+    <p class="section-sub">Time and space analysis for each module in the pipeline</p>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Module</th>
+            <th>Data Structure</th>
+            <th>Time Complexity</th>
+            <th>Space Complexity</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Tokenization</td>
+            <td>Array</td>
+            <td><span class="complexity-pill green">O(n)</span></td>
+            <td><span class="complexity-pill green">O(n)</span></td>
+            <td>Split on whitespace; n = character count</td>
+          </tr>
+          <tr>
+            <td>N-gram Extraction</td>
+            <td>Stack + Array</td>
+            <td><span class="complexity-pill green">O(n)</span></td>
+            <td><span class="complexity-pill green">O(n)</span></td>
+            <td>Sliding window of size k=3</td>
+          </tr>
+          <tr>
+            <td>Sorting N-grams</td>
+            <td>Array</td>
+            <td><span class="complexity-pill">O(n log n)</span></td>
+            <td><span class="complexity-pill green">O(1)</span></td>
+            <td>In-place JS Array.sort (TimSort)</td>
+          </tr>
+          <tr>
+            <td>Naive String Matching</td>
+            <td>String</td>
+            <td><span class="complexity-pill red">O(n · m)</span></td>
+            <td><span class="complexity-pill green">O(1)</span></td>
+            <td>n = text length, m = pattern length</td>
+          </tr>
+          <tr>
+            <td>N-gram Intersection</td>
+            <td>Sorted Array</td>
+            <td><span class="complexity-pill">O(n + m)</span></td>
+            <td><span class="complexity-pill green">O(k)</span></td>
+            <td>Two-pointer merge on sorted sets</td>
+          </tr>
+          <tr>
+            <td>Result Accumulation</td>
+            <td>Linked List</td>
+            <td><span class="complexity-pill green">O(1)</span></td>
+            <td><span class="complexity-pill green">O(k)</span></td>
+            <td>k = number of matches found</td>
+          </tr>
+          <tr>
+            <td>Similarity Score</td>
+            <td>—</td>
+            <td><span class="complexity-pill green">O(1)</span></td>
+            <td><span class="complexity-pill green">O(1)</span></td>
+            <td>matched / total × 100</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ────────────────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-logo">🔍 AI Plagiarism Detector</div>
+  <div class="footer-sub">FDS Mini Project · SY BTech IT · 2026</div>
+  <div class="footer-divider"></div>
+  <div class="footer-meta">Developed by <strong>Pranav</strong> · SY BTech IT · FDS Mini Project 2026</div>
+</footer>
+
+<!-- ── JAVASCRIPT ────────────────────────────────────────────────────── -->
+<script>
+  /* ================================================================
+     Linked List — stores matched phrase results
+  ================================================================ */
+  class MatchNode {
+    constructor(phrase, position) {
+      this.phrase   = phrase;
+      this.position = position;
+      this.next     = null;
+    }
+  }
+  class MatchLinkedList {
+    constructor() { this.head = null; this.size = 0; }
+    append(phrase, position) {
+      const node = new MatchNode(phrase, position);
+      if (!this.head) { this.head = node; }
+      else {
+        let cur = this.head;
+        while (cur.next) cur = cur.next;
+        cur.next = node;
+      }
+      this.size++;
+    }
+    toArray() {
+      const arr = [];
+      let cur = this.head;
+      while (cur) { arr.push({ phrase: cur.phrase, position: cur.position }); cur = cur.next; }
+      return arr;
+    }
+  }
+
+  /* ================================================================
+     Stack — used during n-gram building
+  ================================================================ */
+  class Stack {
+    constructor() { this._data = []; }
+    push(v) { this._data.push(v); }
+    pop()   { return this._data.pop(); }
+    peek()  { return this._data[this._data.length - 1]; }
+    get size() { return this._data.length; }
+    toArray() { return [...this._data]; }
+  }
+
+  /* ================================================================
+     Tokenizer — returns cleaned word array (Array DS)
+  ================================================================ */
+  function tokenize(text) {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter(w => w.length > 0);
+  }
+
+  /* ================================================================
+     N-gram Extractor — uses Stack to build sliding window trigrams
+  ================================================================ */
+  function extractNgrams(words, k = 3) {
+    const result = [];
+    const window = new Stack();
+
+    for (let i = 0; i < words.length; i++) {
+      window.push(words[i]);
+      if (window.size > k) {
+        // Remove oldest element (simulate shift)
+        const tmp = new Stack();
+        while (window.size > 1) tmp.push(window.pop());
+        window.pop(); // discard oldest
+        while (tmp.size) window.push(tmp.pop());
+      }
+      if (window.size === k) {
+        result.push(window.toArray().join(' '));
+      }
+    }
+    return result;
+  }
+
+  /* ================================================================
+     Naive String Matching — brute force O(n*m)
+  ================================================================ */
+  function naiveMatch(text, pattern) {
+    const positions = [];
+    const n = text.length;
+    const m = pattern.length;
+    for (let i = 0; i <= n - m; i++) {
+      let j = 0;
+      while (j < m && text[i + j] === pattern[j]) j++;
+      if (j === m) positions.push(i);
+    }
+    return positions;
+  }
+
+  /* ================================================================
+     N-gram Intersection — two-pointer on sorted arrays O(n+m)
+  ================================================================ */
+  function ngramIntersect(sortedA, sortedB) {
+    const common = [];
+    let i = 0, j = 0;
+    while (i < sortedA.length && j < sortedB.length) {
+      if (sortedA[i] === sortedB[j]) {
+        common.push(sortedA[i]);
+        i++; j++;
+      } else if (sortedA[i] < sortedB[j]) {
+        i++;
+      } else {
+        j++;
+      }
+    }
+    return common;
+  }
+
+  /* ================================================================
+     Main Analyze Function
+  ================================================================ */
+  function analyze() {
+    const refRaw  = document.getElementById('refText').value.trim();
+    const suspRaw = document.getElementById('suspText').value.trim();
+
+    if (!refRaw || !suspRaw) {
+      alert('Please enter both reference and suspect texts before analyzing.');
+      return;
+    }
+
+    // 1. Tokenize (Array DS)
+    const refWords  = tokenize(refRaw);
+    const suspWords = tokenize(suspRaw);
+
+    if (refWords.length < 3 || suspWords.length < 3) {
+      alert('Each text must contain at least 3 words for meaningful analysis.');
+      return;
+    }
+
+    // 2. Extract trigrams (Stack DS used inside)
+    const refNgrams  = extractNgrams(refWords,  3);
+    const suspNgrams = extractNgrams(suspWords, 3);
+
+    // 3. Sort (Sorting)
+    const sortedRef  = [...refNgrams].sort();
+    const sortedSusp = [...suspNgrams].sort();
+
+    // 4. Deduplicate sorted arrays
+    const uniqRef  = [...new Set(sortedRef)];
+    const uniqSusp = [...new Set(sortedSusp)];
+
+    // 5. Intersect
+    const matched = ngramIntersect(uniqRef, uniqSusp);
+
+    // 6. Similarity score
+    const denom = uniqRef.length;
+    const simPct = denom === 0 ? 0 : Math.round((matched.length / denom) * 100);
+
+    // 7. Exact phrase matches via naive matching (String DS)
+    //    Find each matched n-gram in raw suspect text
+    const matchResults = new MatchLinkedList();
+    const suspLower    = suspRaw.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ');
+    const refLower     = refRaw.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ');
+
+    // For display, pick up to 30 unique matched phrases
+    const displayMatches = matched.slice(0, 30);
+    displayMatches.forEach((phrase, idx) => {
+      const positions = naiveMatch(suspLower, phrase);
+      if (positions.length > 0) {
+        matchResults.append(phrase, positions[0]);
+      } else {
+        matchResults.append(phrase, -1);
+      }
+    });
+
+    // 8. Render results
+    renderResults(simPct, refNgrams.length, suspNgrams.length, matched.length, matchResults);
+  }
+
+  /* ================================================================
+     Render Results
+  ================================================================ */
+  function renderResults(pct, totalRef, totalSusp, matchedCount, matchList) {
+    const resultsEl = document.getElementById('results');
+    resultsEl.style.display = 'block';
+    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    // Score ring color
+    const ring = document.getElementById('scoreRing');
+    const scoreNum = document.getElementById('scoreNum');
+    scoreNum.textContent = pct;
+
+    let ringColor, verdictClass, verdictText, verdictDesc;
+    if (pct < 20) {
+      ringColor    = 'var(--accent-green)';
+      verdictClass = 'original';
+      verdictText  = '✅ Original';
+      verdictDesc  = 'Low similarity detected. The text appears largely original.';
+    } else if (pct < 50) {
+      ringColor    = 'var(--accent-yellow)';
+      verdictClass = 'moderate';
+      verdictText  = '⚠️ Moderate Similarity';
+      verdictDesc  = 'Some matching phrases found. Manual review recommended.';
+    } else {
+      ringColor    = 'var(--accent-red)';
+      verdictClass = 'high';
+      verdictText  = '🚨 High Plagiarism';
+      verdictDesc  = 'Significant overlap detected. Likely plagiarized content.';
+    }
+
+    ring.style.borderColor = ringColor;
+    scoreNum.style.color   = ringColor;
+
+    const badge = document.getElementById('verdictBadge');
+    badge.className = `verdict-badge ${verdictClass}`;
+    badge.textContent = verdictText;
+    document.getElementById('verdictDesc').textContent = verdictDesc;
+
+    document.getElementById('mTotalRef').textContent  = totalRef;
+    document.getElementById('mTotalSusp').textContent = totalSusp;
+    document.getElementById('mMatched').textContent   = matchedCount;
+
+    const matchArr = matchList.toArray();
+    document.getElementById('mExact').textContent = matchArr.filter(m => m.position >= 0).length;
+
+    // Match list
+    const listEl = document.getElementById('matchList');
+    listEl.innerHTML = '';
+
+    if (matchArr.length === 0) {
+      listEl.innerHTML = '<div class="no-matches">No matching phrases found.</div>';
+    } else {
+      matchArr.forEach((m, i) => {
+        const item = document.createElement('div');
+        item.className = 'match-item';
+        const posText = m.position >= 0 ? ` @ char ${m.position}` : '';
+        item.innerHTML = `<span class="match-idx">#${i + 1}</span><span>"${m.phrase}"${posText}</span>`;
+        listEl.appendChild(item);
+      });
+    }
+  }
+
+  /* ================================================================
+     Load Sample Texts
+  ================================================================ */
+  function loadSample() {
+    document.getElementById('refText').value =
+      `Machine learning is a subset of artificial intelligence that enables systems to learn and improve from experience without being explicitly programmed. It focuses on developing computer programs that can access data and use it to learn for themselves. The process begins with observations or data, such as examples, direct experience, or instruction, to look for patterns in data and make better decisions in the future.`;
+
+    document.getElementById('suspText').value =
+      `Machine learning is a subset of artificial intelligence that enables systems to learn from experience without being explicitly programmed. Deep learning is part of a broader family of machine learning methods. The process begins with observations or data to look for patterns in data and make better decisions. It focuses on developing computer programs that access and utilize data to learn for themselves over time.`;
+  }
+
+  /* ================================================================
+     Clear All
+  ================================================================ */
+  function clearAll() {
+    document.getElementById('refText').value  = '';
+    document.getElementById('suspText').value = '';
+    document.getElementById('results').style.display = 'none';
+  }
+</script>
+</body>
+</html>

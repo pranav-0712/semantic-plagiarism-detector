@@ -1,0 +1,26 @@
+Machine learning is a branch of artificial intelligence that enables systems
+to learn from data and improve their performance over time without being
+explicitly programmed. It uses algorithms to parse data, learn from it, and
+make informed decisions. Machine learning is applied in many fields including
+computer vision, natural language processing, and speech recognition.
+
+Deep learning is a subset of machine learning that uses neural networks with
+multiple layers to model complex patterns in data. These deep neural networks
+are inspired by the structure and function of the human brain. Deep learning
+has achieved remarkable results in image recognition, language translation,
+and autonomous driving systems.
+
+Supervised learning is a type of machine learning where the model is trained
+on labelled data. The algorithm learns to map inputs to outputs based on
+example input-output pairs. Classification and regression are two key tasks
+performed using supervised learning algorithms.
+
+Unsupervised learning, on the other hand, finds hidden patterns in data
+without labelled responses. Clustering, dimensionality reduction, and
+generative modelling are common unsupervised learning techniques. The
+k-means clustering algorithm is a popular unsupervised learning method.
+
+Reinforcement learning is a paradigm where an agent learns to make decisions
+by interacting with an environment to maximise a cumulative reward signal.
+This approach has led to breakthroughs in game playing, robotics, and
+resource management systems.
