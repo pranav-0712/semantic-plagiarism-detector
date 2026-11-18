@@ -1,8 +1,6 @@
 /*
  * ============================================================
  *  sorter.h  –  Similarity Results & Merge Sort
- *  FDS Concept: Unit 3 – Sorting Techniques (Merge Sort)
- *              Unit 3 – Searching (Linear Search on results)
  *
  *  After computing plagiarism similarity scores against every
  *  document in the store, results are ranked using Merge Sort

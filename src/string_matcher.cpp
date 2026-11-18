@@ -1,7 +1,6 @@
 /*
  * ============================================================
  *  string_matcher.cpp  –  Implementation of StringMatcher
- *  FDS Concept: Unit 2 – Strings and Naive String Matching
  * ============================================================
  */
 

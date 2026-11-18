@@ -1,7 +1,6 @@
 /*
  * ============================================================
  *  string_matcher.h  –  String Processing & Naive Matching
- *  FDS Concept: Unit 2 – Strings and Naive String Matching
  *
  *  Provides utilities for:
  *   - Text normalization (lowercase, punctuation removal)

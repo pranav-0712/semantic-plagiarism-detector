@@ -1,7 +1,6 @@
 /*
  * ============================================================
  *  plagiarism_detector.cpp  –  Core Detection Engine Implementation
- *  FDS Concepts: ADT, Arrays, Strings, Stack, Linked List, Sorting
  * ============================================================
  */
 
@@ -45,7 +44,6 @@ PlagiarismDetector::~PlagiarismDetector() {
 
 // ============================================================
 //  processTokensWithStack
-//  FDS Concept: Unit 4 – Stack ADT
 //  Uses a Stack to push tokens one-by-one and pop only the
 //  ones that are NOT stop-words, effectively filtering the stream.
 // ============================================================
@@ -147,10 +145,10 @@ std::vector<SimilarityResult> PlagiarismDetector::analyse(
     std::string normSuspect = StringMatcher::normalize(suspectText);
     std::vector<std::string> suspectTokens = StringMatcher::tokenize(normSuspect);
 
-    // ---- Step 2: Filter stop-words using the Stack (Unit 4) ----
+    // ---- Step 2: Filter stop-words using the Stack ----
     std::vector<std::string> filteredSuspect = processTokensWithStack(suspectTokens);
 
-    // ---- Step 3: Generate n-grams for the suspect text (Unit 2 – Strings) ----
+    // ---- Step 3: Generate n-grams for the suspect text ----
     std::vector<std::string> suspectNGrams = StringMatcher::generateNGrams(filteredSuspect, ngramSize);
 
     if (suspectNGrams.empty()) {
@@ -159,7 +157,7 @@ std::vector<SimilarityResult> PlagiarismDetector::analyse(
         return results;
     }
 
-    // ---- Step 4: Compare against every reference document (Unit 5 – Linked List traversal) ----
+    // ---- Step 4: Compare against every reference document (linked list traversal) ----
     DocumentNode* current = store->getHead();
     while (current != nullptr) {
 
@@ -183,7 +181,7 @@ std::vector<SimilarityResult> PlagiarismDetector::analyse(
         current = current->next;    // Move to next linked list node
     }
 
-    // ---- Step 6: Sort results by descending similarity (Merge Sort – Unit 3) ----
+    // ---- Step 6: Sort results by descending similarity (merge sort) ----
     if (!results.empty())
         Sorter::mergeSort(results, 0, static_cast<int>(results.size()) - 1);
 

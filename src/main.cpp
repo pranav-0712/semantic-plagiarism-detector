@@ -1,20 +1,13 @@
 /*
  * ============================================================
- *  main.cpp  –  AI Plagiarism Detector (CLI Entry Point)
- *  Subject : Fundamentals of Data Structures (FDS)
- *  Mini Project – SY BTech IT
+ *  main.cpp  –  Semantic Plagiarism Detector (CLI entry point)
  *
- *  FDS Concepts Used:
- *   Unit 1 : ADT, Algorithm complexity analysis
- *   Unit 2 : Arrays, Strings, Naive String Matching
- *   Unit 3 : Linear Search, Merge Sort
- *   Unit 4 : Stack ADT
- *   Unit 5 : Singly Linked List
+ *  Interactive command-line interface for loading reference
+ *  documents and checking text against them.
  *
- *  How to compile (g++):
- *    g++ -std=c++17 -O2 -Wall main.cpp string_matcher.cpp \
- *        document_store.cpp sorter.cpp plagiarism_detector.cpp \
- *        -o plagiarism_detector
+ *  Build:
+ *    make
+ *    (or compile every file in src/ with g++ -std=c++17)
  *
  *  How to run:
  *    ./plagiarism_detector          (Linux/macOS)
@@ -35,29 +28,9 @@
 static void printBanner() {
     std::cout << "\n";
     std::cout << "  ╔══════════════════════════════════════════════════════╗\n";
-    std::cout << "  ║          AI PLAGIARISM DETECTOR  v1.0               ║\n";
-    std::cout << "  ║   FDS Mini Project | SY BTech IT                    ║\n";
-    std::cout << "  ║   Data Structures: Arrays, Strings, Linked List,    ║\n";
-    std::cout << "  ║   Stack, Merge Sort, Naive String Matching          ║\n";
+    std::cout << "  ║         SEMANTIC PLAGIARISM DETECTOR  v1.0          ║\n";
+    std::cout << "  ║   N-gram matching  ·  Jaccard similarity scoring    ║\n";
     std::cout << "  ╚══════════════════════════════════════════════════════╝\n\n";
-}
-
-// ---- Utility: Display the main menu ----
-static void printMenu() {
-    std::cout << "  ┌─────────────────────────────────────────┐\n";
-    std::cout << "  │               MAIN MENU                 │\n";
-    std::cout << "  ├─────────────────────────────────────────┤\n";
-    std::cout << "  │  1. Load reference document from file   │\n";
-    std::cout << "  │  2. Add reference text (manual input)   │\n";
-    std::cout << "  │  3. List all reference documents        │\n";
-    std::cout << "  │  4. Remove a reference document         │\n";
-    std::cout << "  │  5. Check a text file for plagiarism    │\n";
-    std::cout << "  │  6. Check typed text for plagiarism     │\n";
-    std::cout << "  │  7. Run demo with sample files          │\n";
-    std::cout << "  │  8. Change n-gram size                  │\n";
-    std::cout << "  │  0. Exit                                │\n";
-    std::cout << "  └─────────────────────────────────────────┘\n";
-    std::cout << "  Enter choice: ";
 }
 
 // ---- Utility: Read all text from a file ----
@@ -240,8 +213,7 @@ int main() {
             }
 
             case 0: {
-                std::cout << "\n  Thank you for using AI Plagiarism Detector!\n";
-                std::cout << "  [FDS Mini Project | SY BTech IT]\n\n";
+                std::cout << "\n  Thank you for using Semantic Plagiarism Detector.\n\n";
                 break;
             }
 

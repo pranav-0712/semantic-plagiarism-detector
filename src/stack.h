@@ -1,7 +1,6 @@
 /*
  * ============================================================
  *  stack.h  –  Generic Stack ADT (Array-Based)
- *  FDS Concept: Unit 4 – Stack as an ADT
  *
  *  A fixed-capacity stack that stores elements of any type T.
  *  Used in this project to process document tokens during the

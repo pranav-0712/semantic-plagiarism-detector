@@ -1,7 +1,6 @@
 /*
  * ============================================================
  *  sorter.cpp  –  Implementation of Merge Sort & Linear Search
- *  FDS Concept: Unit 3 – Sorting and Searching
  * ============================================================
  */
 

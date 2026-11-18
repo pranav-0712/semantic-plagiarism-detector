@@ -1,11 +1,10 @@
 /*
  * ============================================================
  *  document_store.h  –  Linked List–Based Document Repository
- *  FDS Concept: Unit 5 – Linked Lists (Singly Linked List)
  *
  *  Every document loaded into the system is stored as a node
- *  in a singly linked list.  This mirrors the "Linked List as
- *  an ADT" concept from Unit 5 of the syllabus.
+ *  in a singly linked list, so documents can be added and
+ *  removed at runtime without a fixed capacity.
  * ============================================================
  */
 

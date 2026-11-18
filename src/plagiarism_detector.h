@@ -1,7 +1,6 @@
 /*
  * ============================================================
  *  plagiarism_detector.h  –  Core Detection Engine
- *  FDS Concept: ADT (Unit 1), integrates all other modules
  *
  *  PlagiarismDetector is the central class that ties together:
  *   - DocumentStore  (linked list of reference docs)
@@ -44,7 +43,6 @@ private:
      * processTokensWithStack(tokens)
      * Uses a Stack<std::string> to filter stop-words and process
      * the token stream before n-gram generation.
-     * Demonstrates the Stack ADT from Unit 4.
      */
     std::vector<std::string> processTokensWithStack(
         const std::vector<std::string>& tokens) const;

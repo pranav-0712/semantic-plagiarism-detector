@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Semantic Plagiarism Detector — Find copied content in seconds</title>
+  <meta name="description" content="Compare any document against your sources. Get a similarity score for each source and every matching passage highlighted, processed privately in your browser." />
+  <meta property="og:title" content="Semantic Plagiarism Detector" />
+  <meta property="og:description" content="Find copied content in seconds. Similarity scores, ranked sources and highlighted matches, processed privately in your browser." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://pranav-0712.github.io/semantic-plagiarism-detector/assets/preview.png" />
+  <meta name="theme-color" content="#4f46e5" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f46e5'/%3E%3Ccircle cx='13' cy='16' r='7' fill='none' stroke='white' stroke-width='2'/%3E%3Ccircle cx='19' cy='16' r='7' fill='none' stroke='white' stroke-width='2'/%3E%3Cpath d='M16 9.68A7 7 0 0 1 16 22.32A7 7 0 0 1 16 9.68Z' fill='white'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-subtle: #f7f8fb;
+      --surface: #ffffff;
+      --border: #e5e7eb;
+      --border-strong: #d1d5db;
+      --text: #0f172a;
+      --text-2: #475569;
+      --text-3: #64748b;
+      --brand: #4f46e5;
+      --brand-hover: #4338ca;
+      --brand-soft: #eef2ff;
+      --brand-ink: #3730a3;
+      --on-brand: #ffffff;
+      --high: #b91c1c;  --high-bg: #fef2f2;
+      --mod: #b45309;   --mod-bg: #fffbeb;
+      --low: #15803d;   --low-bg: #f0fdf4;
+      --none: #475569;  --none-bg: #f1f5f9;
+      --mark: #fde68a;  --mark-text: #0f172a;
+      --shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 8px 24px rgba(15, 23, 42, .06);
+      --radius: 10px;
+      --radius-lg: 14px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #0b0d12; --bg-subtle: #10131a; --surface: #151922;
+        --border: #252a35; --border-strong: #343b4a;
+        --text: #e8eaf0; --text-2: #aab2c0; --text-3: #7f8797;
+        --brand: #818cf8; --brand-hover: #a5b4fc; --brand-soft: #1b1d3a; --brand-ink: #c7d2fe; --on-brand: #0b0d12;
+        --high: #f87171; --high-bg: #2b1515;
+        --mod: #fbbf24;  --mod-bg: #2a2110;
+        --low: #4ade80;  --low-bg: #0f2719;
+        --none: #aab2c0; --none-bg: #1c212b;
+        --mark: #854d0e; --mark-text: #fef9c3;
+        --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .25);
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #0b0d12; --bg-subtle: #10131a; --surface: #151922;
+      --border: #252a35; --border-strong: #343b4a;
+      --text: #e8eaf0; --text-2: #aab2c0; --text-3: #7f8797;
+      --brand: #818cf8; --brand-hover: #a5b4fc; --brand-soft: #1b1d3a; --brand-ink: #c7d2fe; --on-brand: #0b0d12;
+      --high: #f87171; --high-bg: #2b1515; --mod: #fbbf24; --mod-bg: #2a2110;
+      --low: #4ade80; --low-bg: #0f2719; --none: #aab2c0; --none-bg: #1c212b;
+      --mark: #854d0e; --mark-text: #fef9c3;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    [hidden] { display: none !important; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-wrap: break-word;
+    }
+    a { color: var(--brand); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    svg { flex-shrink: 0; }
+    :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+    .container { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      font: inherit; font-size: .9rem; font-weight: 600; line-height: 1;
+      padding: 11px 18px; border-radius: 8px; cursor: pointer; white-space: nowrap;
+      border: 1px solid var(--border-strong); background: var(--surface); color: var(--text);
+      transition: background .15s, border-color .15s, color .15s;
+    }
+    .btn:hover { border-color: var(--text-3); text-decoration: none; }
+    .btn-primary { background: var(--brand); border-color: var(--brand); color: var(--on-brand); }
+    .btn-primary:hover { background: var(--brand-hover); border-color: var(--brand-hover); }
+    .btn-sm { padding: 7px 12px; font-size: .82rem; }
+    .btn-ghost { border-color: transparent; background: transparent; color: var(--text-2); }
+    .btn-ghost:hover { background: var(--bg-subtle); border-color: var(--border); color: var(--text); }
+    .btn-lg { padding: 14px 24px; font-size: .98rem; }
+    .kbd { font-size: .72rem; font-weight: 500; opacity: .75; }
+
+    /* Nav */
+    nav {
+      position: sticky; top: 0; z-index: 50;
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter: saturate(180%) blur(10px);
+      -webkit-backdrop-filter: saturate(180%) blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner { display: flex; align-items: center; height: 64px; gap: 32px; }
+    .brand { display: flex; align-items: center; gap: 10px; color: var(--text); font-weight: 700; font-size: 1rem; letter-spacing: -.01em; }
+    .brand:hover { text-decoration: none; }
+    .brand svg rect { fill: var(--brand); }
+    .nav-links { display: flex; gap: 28px; list-style: none; flex: 1; }
+    .nav-links a { color: var(--text-2); font-size: .9rem; font-weight: 500; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(180deg, var(--brand-soft) 0%, var(--bg) 520px);
+      padding: 56px 0 72px;
+    }
+    .hero-copy { max-width: 900px; margin: 0 auto 36px; text-align: center; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: .8rem; font-weight: 600; color: var(--brand-ink);
+      background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
+      padding: 5px 12px 5px 8px; margin-bottom: 20px;
+    }
+    .pill-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--low); }
+    .hero h1 { font-size: clamp(2.1rem, 5vw, 3.4rem); font-weight: 800; letter-spacing: -.035em; line-height: 1.08; margin-bottom: 18px; }
+    .hero h1 .accent { color: var(--brand); }
+    .hero p.sub { font-size: 1.12rem; color: var(--text-2); max-width: 640px; margin: 0 auto 22px; }
+    .trust { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px 24px; list-style: none; color: var(--text-2); font-size: .88rem; }
+    .trust li { display: inline-flex; align-items: center; gap: 6px; }
+    .trust svg { color: var(--low); }
+
+    /* App card */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); }
+    .app-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--border); }
+    .app-title { font-weight: 600; font-size: .95rem; display: flex; align-items: center; gap: 10px; }
+    .app-title .dots { display: inline-flex; gap: 6px; }
+    .app-title .dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--border-strong); display: block; }
+    .app-head-actions { display: flex; gap: 6px; }
+    .app-body { display: grid; grid-template-columns: 1fr 1fr; }
+    .panel { display: flex; flex-direction: column; padding: 18px 20px; min-width: 0; }
+    .panel + .panel { border-left: 1px solid var(--border); }
+    .panel.drag { background: var(--brand-soft); }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; min-height: 32px; }
+    .panel-title { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: .92rem; }
+    .step { width: 22px; height: 22px; border-radius: 50%; background: var(--brand-soft); color: var(--brand-ink); font-size: .75rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+    textarea, .name-input, select {
+      font: inherit; color: var(--text); background: var(--bg);
+      border: 1px solid var(--border); border-radius: 8px;
+    }
+    textarea {
+      width: 100%; flex: 1; min-height: 280px; resize: vertical;
+      font-size: .92rem; line-height: 1.6; padding: 12px 14px;
+    }
+    textarea::placeholder, .name-input::placeholder { color: var(--text-3); }
+    textarea:focus, .name-input:focus, select:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent); }
+    .panel-foot { display: flex; justify-content: space-between; gap: 8px; margin-top: 8px; font-size: .78rem; color: var(--text-3); }
+
+    .tabs { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 10px; padding-bottom: 2px; scrollbar-width: thin; }
+    .tab {
+      display: inline-flex; align-items: center; flex-shrink: 0;
+      border: 1px solid var(--border); border-radius: 8px; background: var(--bg-subtle);
+      font-size: .82rem; color: var(--text-2); max-width: 220px;
+    }
+    .tab.active { background: var(--surface); border-color: var(--brand); color: var(--text); box-shadow: 0 0 0 1px var(--brand) inset; }
+    .tab button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; padding: 6px 10px; }
+    .tab .tab-main { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+    .tab .tab-x { padding: 6px 8px 6px 0; color: var(--text-3); font-size: 1rem; line-height: 1; }
+    .tab .tab-x:hover { color: var(--high); }
+    .tab-add { border-style: dashed; background: transparent; }
+    .tab-add button { color: var(--brand); font-weight: 600; }
+    .name-input { width: 100%; font-size: .88rem; padding: 8px 12px; margin-bottom: 8px; }
+
+    .app-foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px 20px; padding: 14px 20px; border-top: 1px solid var(--border); background: var(--bg-subtle); border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+    .options { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 24px; font-size: .86rem; color: var(--text-2); }
+    .options label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+    select { font-size: .86rem; padding: 6px 10px; }
+    input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--brand); }
+    .form-error { color: var(--high); font-size: .88rem; padding: 0 20px 14px; background: var(--bg-subtle); border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+    .app-foot.has-error { border-radius: 0; }
+
+    /* Results */
+    .results { margin-top: 24px; scroll-margin-top: 84px; }
+    .res-head { display: grid; grid-template-columns: auto 1fr auto; gap: 28px; align-items: center; padding: 24px; border-bottom: 1px solid var(--border); }
+    .res-label { font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); }
+    .res-num { font-size: 3rem; font-weight: 800; letter-spacing: -.03em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+    .res-verdict p { color: var(--text-2); font-size: .94rem; margin-top: 6px; }
+    .res-verdict .res-src { font-size: .86rem; color: var(--text-3); margin-top: 2px; }
+    .res-verdict .res-src strong { color: var(--text); font-weight: 600; }
+    .chip { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
+    .chip::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .v-high { color: var(--high); background: var(--high-bg); }
+    .v-mod  { color: var(--mod);  background: var(--mod-bg); }
+    .v-low  { color: var(--low);  background: var(--low-bg); }
+    .v-none { color: var(--none); background: var(--none-bg); }
+
+    .res-body { display: grid; grid-template-columns: 340px 1fr; }
+    .rank { padding: 20px; border-right: 1px solid var(--border); min-width: 0; }
+    .detail { padding: 20px 24px; min-width: 0; }
+    .res-body h3 { font-size: .92rem; font-weight: 600; margin-bottom: 12px; }
+    .rank ol { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .rank-item {
+      width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 12px 14px; display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center;
+    }
+    .rank-item:hover { border-color: var(--border-strong); }
+    .rank-item[aria-pressed="true"] { border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand) inset; }
+    .rank-name { font-size: .88rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .rank-pct { font-size: .95rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .rank-bar { grid-column: 1 / -1; height: 4px; background: var(--bg-subtle); border-radius: 2px; overflow: hidden; }
+    .rank-bar span { display: block; height: 100%; border-radius: 2px; }
+    .rank-meta { grid-column: 1 / -1; font-size: .76rem; color: var(--text-3); }
+
+    .detail-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+    .detail-head h3 { margin: 0; }
+    .detail-stats { font-size: .82rem; color: var(--text-3); }
+    .doc-view {
+      border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg);
+      padding: 16px 18px; font-size: .93rem; line-height: 1.85; color: var(--text-2);
+      max-height: 340px; overflow-y: auto; white-space: pre-wrap;
+    }
+    .doc-view mark { background: var(--mark); color: var(--mark-text); border-radius: 3px; padding: 1px 0; }
+    .legend { display: flex; align-items: center; gap: 8px; font-size: .78rem; color: var(--text-3); margin-top: 8px; }
+    .legend i { width: 14px; height: 10px; border-radius: 2px; background: var(--mark); display: inline-block; }
+    .phrases-head { font-size: .86rem; font-weight: 600; margin: 20px 0 10px; }
+    .phrases-head span { color: var(--text-3); font-weight: 500; }
+    .phrases { display: flex; flex-wrap: wrap; gap: 6px; max-height: 180px; overflow-y: auto; }
+    .phrase { font-size: .8rem; padding: 4px 10px; border-radius: 6px; background: var(--bg-subtle); border: 1px solid var(--border); color: var(--text-2); }
+    .muted { color: var(--text-3); font-size: .88rem; }
+
+    /* Sections */
+    section.block { padding: 96px 0; border-top: 1px solid var(--border); scroll-margin-top: 64px; }
+    section.block.subtle { background: var(--bg-subtle); }
+    .section-head { max-width: 640px; margin-bottom: 48px; }
+    .section-head.center { margin-left: auto; margin-right: auto; text-align: center; }
+    .kicker { font-size: .8rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--brand); margin-bottom: 10px; }
+    .section-head h2 { font-size: clamp(1.7rem, 3.2vw, 2.3rem); font-weight: 800; letter-spacing: -.025em; line-height: 1.15; margin-bottom: 14px; }
+    .section-head p { color: var(--text-2); font-size: 1.05rem; }
+
+    .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .feature { padding: 26px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+    .icon { width: 40px; height: 40px; border-radius: 10px; background: var(--brand-soft); color: var(--brand); display: flex; align-items: center; justify-content: center; margin-bottom: 18px; }
+    .feature h3, .usecase h3 { font-size: 1.02rem; font-weight: 700; margin-bottom: 6px; letter-spacing: -.01em; }
+    .feature p, .usecase p { color: var(--text-2); font-size: .93rem; }
+
+    .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; counter-reset: s; margin-bottom: 40px; }
+    .stepcard { position: relative; padding: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); counter-increment: s; }
+    .stepcard::before { content: counter(s); display: flex; width: 30px; height: 30px; border-radius: 50%; background: var(--brand); color: var(--on-brand); font-weight: 700; font-size: .85rem; align-items: center; justify-content: center; margin-bottom: 16px; }
+    .stepcard h3 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+    .stepcard p { color: var(--text-2); font-size: .9rem; }
+    .scale-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 14px; }
+    .scale { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .scale > div { padding: 16px 18px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); }
+    .scale .range { font-size: 1.15rem; font-weight: 800; font-variant-numeric: tabular-nums; margin: 10px 0 2px; }
+    .scale p { font-size: .86rem; color: var(--text-2); }
+
+    .usecases { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .usecase { padding: 24px; border-left: 2px solid var(--brand); background: var(--surface); border-radius: 0 var(--radius) var(--radius) 0; }
+
+    .faq { max-width: 780px; margin: 0 auto; }
+    .faq details { border-bottom: 1px solid var(--border); }
+    .faq summary { cursor: pointer; list-style: none; padding: 20px 0; font-weight: 600; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::after { content: '+'; font-size: 1.4rem; font-weight: 400; color: var(--text-3); line-height: 1; }
+    .faq details[open] summary::after { content: '\2212'; }
+    .faq details p { color: var(--text-2); padding: 0 0 20px; max-width: 680px; }
+
+    .cta { padding: 88px 0; border-top: 1px solid var(--border); }
+    .cta-box { text-align: center; padding: 56px 24px; border-radius: 20px; background: var(--brand); color: var(--on-brand); }
+    .cta-box h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 800; letter-spacing: -.02em; margin-bottom: 10px; }
+    .cta-box p { opacity: .85; margin-bottom: 26px; font-size: 1.05rem; }
+    .cta-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+    .cta-box .btn-primary { background: var(--on-brand); color: var(--brand); border-color: var(--on-brand); }
+    .cta-box .btn-primary:hover { opacity: .92; }
+    .cta-box .btn-outline { background: transparent; color: var(--on-brand); border-color: color-mix(in srgb, var(--on-brand) 45%, transparent); }
+    .cta-box .btn-outline:hover { border-color: var(--on-brand); }
+
+    footer { border-top: 1px solid var(--border); padding: 32px 0; font-size: .88rem; color: var(--text-3); }
+    .foot { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .foot .brand { font-size: .92rem; }
+    .foot-links { display: flex; gap: 20px; }
+    .foot-links a { color: var(--text-2); }
+
+    @media (max-width: 1000px) {
+      .features { grid-template-columns: repeat(2, 1fr); }
+      .steps, .usecases, .scale { grid-template-columns: repeat(2, 1fr); }
+      .res-body { grid-template-columns: 1fr; }
+      .rank { border-right: none; border-bottom: 1px solid var(--border); }
+    }
+    @media (max-width: 820px) {
+      .nav-links { display: none; }
+      .nav-inner { justify-content: space-between; }
+      .app-body { grid-template-columns: 1fr; }
+      .panel + .panel { border-left: none; border-top: 1px solid var(--border); }
+      textarea { min-height: 200px; }
+      .res-head { grid-template-columns: 1fr; gap: 14px; }
+    }
+    @media (max-width: 600px) {
+      .container { padding: 0 16px; }
+      .hero { padding: 36px 0 48px; }
+      .features, .steps, .usecases, .scale { grid-template-columns: 1fr; }
+      section.block { padding: 64px 0; }
+      .app-head, .panel, .app-foot { padding-left: 14px; padding-right: 14px; }
+      .app-title .dots { display: none; }
+      .app-foot .btn-primary { width: 100%; }
+      .nav-gh span { display: none; }
+      .panel-foot span:last-child { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<nav aria-label="Main">
+  <div class="container nav-inner">
+    <a class="brand" href="#top" aria-label="Semantic Plagiarism Detector home">
+      <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8"/><circle cx="13" cy="16" r="7" fill="none" stroke="#fff" stroke-width="2"/><circle cx="19" cy="16" r="7" fill="none" stroke="#fff" stroke-width="2"/><path d="M16 9.68A7 7 0 0 1 16 22.32A7 7 0 0 1 16 9.68Z" fill="#fff"/></svg>
+      Semantic Plagiarism Detector
+    </a>
+    <ul class="nav-links">
+      <li><a href="#checker">Checker</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how-it-works">How it works</a></li>
+      <li><a href="#use-cases">Use cases</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <a class="btn btn-sm nav-gh" href="https://github.com/pranav-0712/semantic-plagiarism-detector" target="_blank" rel="noopener" aria-label="View on GitHub">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      <span>GitHub</span>
+    </a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="container">
+    <div class="hero-copy">
+      <div class="pill"><span class="pill-dot"></span>Private by design. Your text stays on your device.</div>
+      <h1>Find copied content <span class="accent">in seconds.</span></h1>
+      <p class="sub">Compare any document against your sources. Get a similarity score for each source, a clear verdict, and every matching passage highlighted.</p>
+      <ul class="trust">
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>No account needed</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Multiple sources at once</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Downloadable report</li>
+      </ul>
+    </div>
+
+    <!-- Checker -->
+    <div id="checker" class="card" style="scroll-margin-top: 84px">
+      <div class="app-head">
+        <div class="app-title"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>Similarity check</div>
+        <div class="app-head-actions">
+          <button class="btn btn-sm btn-ghost" id="btnExample" type="button">Load example</button>
+          <button class="btn btn-sm btn-ghost" id="btnClear" type="button">Clear all</button>
+        </div>
+      </div>
+
+      <div class="app-body">
+        <div class="panel" id="docPanel">
+          <div class="panel-head">
+            <div class="panel-title"><span class="step">1</span>Document to check</div>
+            <label class="btn btn-sm" for="docFile">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg>
+              Upload .txt
+            </label>
+            <input type="file" id="docFile" class="sr-only" accept=".txt,.md,text/plain" />
+          </div>
+          <label for="docText" class="sr-only">Document to check</label>
+          <textarea id="docText" placeholder="Paste the text you want to check, or drop a .txt file here."></textarea>
+          <div class="panel-foot"><span id="docMeta">0 words</span><span>Drag and drop supported</span></div>
+        </div>
+
+        <div class="panel" id="srcPanel">
+          <div class="panel-head">
+            <div class="panel-title"><span class="step">2</span>Sources to compare against</div>
+            <label class="btn btn-sm" for="srcFiles">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg>
+              Upload files
+            </label>
+            <input type="file" id="srcFiles" class="sr-only" accept=".txt,.md,text/plain" multiple />
+          </div>
+          <div class="tabs" id="tabs" aria-label="Sources"></div>
+          <label for="srcName" class="sr-only">Source name</label>
+          <input type="text" id="srcName" class="name-input" placeholder="Source name" maxlength="80" />
+          <label for="srcText" class="sr-only">Source text</label>
+          <textarea id="srcText" placeholder="Paste the source text, or drop one or more .txt files here."></textarea>
+          <div class="panel-foot"><span id="srcMeta">0 words</span><span>Add as many sources as you need</span></div>
+        </div>
+      </div>
+
+      <div class="app-foot" id="appFoot">
+        <div class="options">
+          <label>Phrase length
+            <select id="optN">
+              <option value="2">2 words</option>
+              <option value="3" selected>3 words (recommended)</option>
+              <option value="4">4 words</option>
+              <option value="5">5 words</option>
+            </select>
+          </label>
+          <label><input type="checkbox" id="optStop" checked /> Ignore common words</label>
+        </div>
+        <button class="btn btn-primary btn-lg" id="btnCheck" type="button">Check document <span class="kbd">Ctrl + Enter</span></button>
+      </div>
+      <div class="form-error" id="formError" role="alert" hidden></div>
+    </div>
+
+    <!-- Results -->
+    <div class="card results" id="results" aria-live="polite" hidden>
+      <div class="res-head">
+        <div>
+          <div class="res-label">Highest similarity</div>
+          <div class="res-num" id="topScore">0%</div>
+        </div>
+        <div class="res-verdict">
+          <span class="chip" id="topVerdict"></span>
+          <p id="topDesc"></p>
+          <p class="res-src">Closest source: <strong id="topName"></strong></p>
+        </div>
+        <button class="btn" id="btnReport" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>
+          Download report
+        </button>
+      </div>
+      <div class="res-body">
+        <div class="rank">
+          <h3>Sources ranked by similarity</h3>
+          <ol id="rankList"></ol>
+        </div>
+        <div class="detail">
+          <div class="detail-head">
+            <h3>Matches with <span id="detailName"></span></h3>
+            <span class="detail-stats" id="detailStats"></span>
+          </div>
+          <div class="doc-view" id="docView"></div>
+          <div class="legend"><i></i>Text that also appears in this source</div>
+          <div class="phrases-head">Matching phrases <span id="phraseCount"></span></div>
+          <div class="phrases" id="phraseList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Features -->
+<section class="block subtle" id="features">
+  <div class="container">
+    <div class="section-head">
+      <div class="kicker">Features</div>
+      <h2>Everything you need to verify originality</h2>
+      <p>Built for fast, clear and private document review, with no installation or sign-up.</p>
+    </div>
+    <div class="features">
+      <div class="feature">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 21 8l-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/><path d="m3 17 9 5 9-5"/></svg></div>
+        <h3>Many sources, one check</h3>
+        <p>Compare a document against any number of sources at once. Results are ranked so the closest match is always on top.</p>
+      </div>
+      <div class="feature">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16"/><path d="M4 12h9"/><path d="M4 18h12"/><rect x="14" y="9.5" width="7" height="5" rx="1"/></svg></div>
+        <h3>See exactly what matched</h3>
+        <p>Matching passages are highlighted in your document, with a full list of shared phrases for each source.</p>
+      </div>
+      <div class="feature">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+        <h3>Private by design</h3>
+        <p>Every check runs locally in your browser. Documents are never uploaded, stored or shared.</p>
+      </div>
+      <div class="feature">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10"/><path d="M18 6h2"/><circle cx="16" cy="6" r="2"/><path d="M4 12h4"/><path d="M12 12h8"/><circle cx="10" cy="12" r="2"/><path d="M4 18h12"/><circle cx="18" cy="18" r="2"/></svg></div>
+        <h3>Scores that mean something</h3>
+        <p>Common words like "the" and "of" are ignored, so scores reflect shared content, not shared grammar. Phrase length is adjustable.</p>
+      </div>
+      <div class="feature">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z"/><path d="M14 3v6h6"/><path d="M9 14h6"/><path d="M9 18h4"/></svg></div>
+        <h3>Shareable reports</h3>
+        <p>Download a plain-text report with scores, verdicts and matched phrases for every source, ready to file or forward.</p>
+      </div>
+      <div class="feature">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3"/><path d="M13 15h4"/></svg></div>
+        <h3>Desktop engine included</h3>
+        <p>The same detection engine ships as a fast, dependency-free C++ command-line application for offline use.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section class="block" id="how-it-works">
+  <div class="container">
+    <div class="section-head">
+      <div class="kicker">How it works</div>
+      <h2>From raw text to a clear verdict</h2>
+      <p>A transparent method you can explain to anyone. There is no black box, and every score is backed by the phrases that produced it.</p>
+    </div>
+    <div class="steps">
+      <div class="stepcard"><h3>Clean</h3><p>Text is lowercased, punctuation is removed, and common filler words are set aside.</p></div>
+      <div class="stepcard"><h3>Split</h3><p>The remaining words are broken into short overlapping phrases, three words long by default.</p></div>
+      <div class="stepcard"><h3>Match</h3><p>Every phrase in your document is looked up in each source to find shared wording.</p></div>
+      <div class="stepcard"><h3>Score</h3><p>Each source receives a similarity score based on shared phrases, then sources are ranked.</p></div>
+    </div>
+
+    <div class="scale-title">Reading the score</div>
+    <div class="scale">
+      <div><span class="chip v-high">Likely copied</span><div class="range">25% and above</div><p>Large portions of the document match the source.</p></div>
+      <div><span class="chip v-mod">Needs review</span><div class="range">10% to 25%</div><p>Several passages match. Check the highlighted text.</p></div>
+      <div><span class="chip v-low">Minor overlap</span><div class="range">Below 10%</div><p>A few shared phrases, typical for documents on the same subject.</p></div>
+      <div><span class="chip v-none">No overlap</span><div class="range">0%</div><p>No shared phrases were found.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- Use cases -->
+<section class="block subtle" id="use-cases">
+  <div class="container">
+    <div class="section-head">
+      <div class="kicker">Use cases</div>
+      <h2>Made for anyone who reviews writing</h2>
+    </div>
+    <div class="usecases">
+      <div class="usecase"><h3>Educators</h3><p>Check assignments against course material, reference texts and earlier submissions.</p></div>
+      <div class="usecase"><h3>Editors and publishers</h3><p>Confirm that submitted articles and manuscripts are original before they go live.</p></div>
+      <div class="usecase"><h3>Content teams</h3><p>Make sure new web copy is not duplicated from existing pages or other sites.</p></div>
+      <div class="usecase"><h3>Writers and students</h3><p>Review your own work before submitting it and spot passages that need a citation.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="block" id="faq">
+  <div class="container">
+    <div class="section-head center">
+      <div class="kicker">FAQ</div>
+      <h2>Frequently asked questions</h2>
+    </div>
+    <div class="faq">
+      <details open>
+        <summary>Is my text uploaded anywhere?</summary>
+        <p>No. Every check runs entirely in your browser. Your documents never leave your device, and nothing is kept after you close the page.</p>
+      </details>
+      <details>
+        <summary>How is the similarity score calculated?</summary>
+        <p>After common words are removed, both texts are split into overlapping word phrases. The score is the number of shared phrases divided by the total number of phrases across both texts, with shared phrases counted once. This measure is known as the Jaccard index.</p>
+      </details>
+      <details>
+        <summary>What score should concern me?</summary>
+        <p>A score of 25% or more usually means large passages were copied. Between 10% and 25%, review the highlighted text. Below 10% is normal for documents that cover the same topic.</p>
+      </details>
+      <details>
+        <summary>Can it detect reworded text?</summary>
+        <p>It finds copied and lightly edited passages, including text with sentences reordered or a few words added or removed. Text that has been completely rewritten in different words will score lower.</p>
+      </details>
+      <details>
+        <summary>Which file types are supported?</summary>
+        <p>Plain-text files (.txt). You can also paste text copied from Word documents, PDFs, web pages or any other source.</p>
+      </details>
+      <details>
+        <summary>Can I use it without a browser?</summary>
+        <p>Yes. The detection engine is also available as a C++ command-line application with no external dependencies. Build instructions are in the GitHub repository.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="container">
+    <div class="cta-box">
+      <h2>Check your first document now</h2>
+      <p>Paste your text, add a source and get a result in seconds.</p>
+      <div class="cta-actions">
+        <a href="#checker" class="btn btn-primary btn-lg">Start a check</a>
+        <a href="https://github.com/pranav-0712/semantic-plagiarism-detector" class="btn btn-outline btn-lg" target="_blank" rel="noopener">View on GitHub</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container foot">
+    <a class="brand" href="#top">
+      <svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8"/><circle cx="13" cy="16" r="7" fill="none" stroke="#fff" stroke-width="2"/><circle cx="19" cy="16" r="7" fill="none" stroke="#fff" stroke-width="2"/><path d="M16 9.68A7 7 0 0 1 16 22.32A7 7 0 0 1 16 9.68Z" fill="#fff"/></svg>
+      Semantic Plagiarism Detector
+    </a>
+    <div>&copy; 2026 Semantic Plagiarism Detector. Built by Pranav.</div>
+    <div class="foot-links">
+      <a href="#checker">Checker</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://github.com/pranav-0712/semantic-plagiarism-detector" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ------------------------------------------------------------------
+   * Detection engine (browser port of src/plagiarism_detector.cpp)
+   * Same stop-word list, filtering rule, n-gram generation, Jaccard
+   * formula and verdict thresholds as the C++ engine.
+   * ------------------------------------------------------------------ */
+  const STOP_WORDS = new Set([
+    'a','an','the','and','or','but','in','on','at','to','for','of','with',
+    'is','are','was','were','be','been','being','have','has','had','do',
+    'does','did','will','would','could','should','may','might','shall',
+    'not','no','nor','so','yet','both','either','neither','than','as',
+    'if','while','although','because','since','unless','until','after',
+    'before','between','above','below','by','from','up','down','about',
+    'into','through','during','it','its','this','that','these','those',
+    'i','you','he','she','we','they','me','him','her','us','them','my',
+    'your','his','our','their','what','which','who','whom','how','when',
+    'where','why','all','any','each','every','few','more','most','other',
+    'some','such','only','own','same','just','very','can','also','there'
+  ]);
+  const THRESHOLD_HIGH = 0.25;
+  const THRESHOLD_MEDIUM = 0.10;
+
+  // Words with their character offsets, so matches can be highlighted.
+  function tokenize(text) {
+    const out = [];
+    const re = /[A-Za-z0-9]+/g;
+    let m;
+    while ((m = re.exec(text)) !== null) {
+      out.push({ w: m[0].toLowerCase(), s: m.index, e: m.index + m[0].length });
+    }
+    return out;
+  }
+
+  // Keep words longer than two characters that are not stop-words.
+  function filterTokens(tokens, ignoreCommon) {
+    if (!ignoreCommon) return tokens;
+    return tokens.filter(t => t.w.length > 2 && !STOP_WORDS.has(t.w));
+  }
+
+  // Sliding window of n consecutive words.
+  function nGrams(tokens, n) {
+    const out = [];
+    for (let i = 0; i + n <= tokens.length; i++) {
+      let t = tokens[i].w;
+      for (let j = 1; j < n; j++) t += ' ' + tokens[i + j].w;
+      out.push({ t, s: tokens[i].s, e: tokens[i + n - 1].e });
+    }
+    return out;
+  }
+
+  // Stable merge sort, highest similarity first.
+  function mergeSort(arr) {
+    if (arr.length < 2) return arr;
+    const mid = arr.length >> 1;
+    const left = mergeSort(arr.slice(0, mid));
+    const right = mergeSort(arr.slice(mid));
+    const out = [];
+    let i = 0, j = 0;
+    while (i < left.length && j < right.length) {
+      out.push(left[i].sim >= right[j].sim ? left[i++] : right[j++]);
+    }
+    return out.concat(left.slice(i), right.slice(j));
+  }
+
+  function compare(docNG, source, n, ignoreCommon) {
+    const refNG = nGrams(filterTokens(tokenize(source.text), ignoreCommon), n);
+    const refSet = new Set(refNG.map(g => g.t));
+    let inter = 0;
+    const phrases = [];
+    const seen = new Set();
+    const ranges = [];
+    for (const g of docNG) {
+      if (refSet.has(g.t)) {
+        inter++;
+        if (!seen.has(g.t)) { seen.add(g.t); phrases.push(g.t); }
+        const last = ranges[ranges.length - 1];
+        if (last && g.s <= last[1] + 1) last[1] = Math.max(last[1], g.e);
+        else ranges.push([g.s, g.e]);
+      }
+    }
+    // Jaccard: |A ∩ B| / (|A| + |B| - |A ∩ B|)
+    const union = refNG.length + docNG.length - inter;
+    const sim = refNG.length && docNG.length && union > 0 ? inter / union : 0;
+    return { name: source.name, sim, inter, refCount: refNG.length, docCount: docNG.length, phrases, ranges, tooShort: refNG.length === 0 };
+  }
+
+  function verdict(sim) {
+    if (sim >= THRESHOLD_HIGH) return { cls: 'v-high', label: 'Likely copied', color: 'var(--high)', desc: 'Large portions of the document match this source. Review it before accepting.' };
+    if (sim >= THRESHOLD_MEDIUM) return { cls: 'v-mod', label: 'Needs review', color: 'var(--mod)', desc: 'Several passages match this source. Check the highlighted text.' };
+    if (sim > 0) return { cls: 'v-low', label: 'Minor overlap', color: 'var(--low)', desc: 'A few phrases match, which is normal for documents on the same subject.' };
+    return { cls: 'v-none', label: 'No overlap', color: 'var(--none)', desc: 'No matching phrases were found in any source.' };
+  }
+
+  /* ------------------------------------------------------------------
+   * UI state
+   * ------------------------------------------------------------------ */
+  const $ = id => document.getElementById(id);
+  let uid = 0;
+  const state = { sources: [], active: null, docName: 'Pasted text', run: null, selected: 0 };
+
+  function makeSource(name, text) {
+    return { id: ++uid, name: name || '', text: text || '' };
+  }
+  function activeSource() { return state.sources.find(s => s.id === state.active); }
+  function displayName(s) { return s.name.trim() || ('Source ' + (state.sources.indexOf(s) + 1)); }
+  function wordCount(t) { const m = t.match(/[A-Za-z0-9]+/g); return m ? m.length : 0; }
+  function plural(n, word) { return n + ' ' + word + (n === 1 ? '' : 's'); }
+  function pct(sim) { return (sim * 100).toFixed(1) + '%'; }
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  function renderTabs() {
+    const wrap = $('tabs');
+    wrap.innerHTML = '';
+    state.sources.forEach(s => {
+      const tab = document.createElement('div');
+      tab.className = 'tab' + (s.id === state.active ? ' active' : '');
+      const main = document.createElement('button');
+      main.type = 'button';
+      main.className = 'tab-main';
+      main.textContent = displayName(s);
+      main.setAttribute('aria-pressed', String(s.id === state.active));
+      main.addEventListener('click', () => { state.active = s.id; renderTabs(); syncEditor(); });
+      tab.appendChild(main);
+      if (state.sources.length > 1) {
+        const x = document.createElement('button');
+        x.type = 'button';
+        x.className = 'tab-x';
+        x.textContent = '×';
+        x.setAttribute('aria-label', 'Remove ' + displayName(s));
+        x.addEventListener('click', () => removeSource(s.id));
+        tab.appendChild(x);
+      }
+      wrap.appendChild(tab);
+    });
+    const add = document.createElement('div');
+    add.className = 'tab tab-add';
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.textContent = '+ Add source';
+    addBtn.addEventListener('click', () => {
+      const s = makeSource();
+      state.sources.push(s);
+      state.active = s.id;
+      renderTabs(); syncEditor();
+      $('srcText').focus();
+    });
+    add.appendChild(addBtn);
+    wrap.appendChild(add);
+  }
+
+  function syncEditor() {
+    const s = activeSource();
+    $('srcName').value = s.name;
+    $('srcName').placeholder = displayName(s);
+    $('srcText').value = s.text;
+    updateMeta();
+  }
+
+  function updateMeta() {
+    $('docMeta').textContent = plural(wordCount($('docText').value), 'word');
+    const s = activeSource();
+    const filled = state.sources.filter(x => x.text.trim()).length;
+    $('srcMeta').textContent = plural(wordCount(s.text), 'word') + ' · ' + plural(filled, 'source') + ' added';
+  }
+
+  function removeSource(id) {
+    const i = state.sources.findIndex(s => s.id === id);
+    state.sources.splice(i, 1);
+    if (state.active === id) state.active = state.sources[Math.max(0, i - 1)].id;
+    renderTabs(); syncEditor();
+  }
+
+  function showError(msg) {
+    $('formError').textContent = msg || '';
+    $('formError').hidden = !msg;
+    $('appFoot').classList.toggle('has-error', !!msg);
+  }
+
+  /* ------------------------------------------------------------------
+   * Files
+   * ------------------------------------------------------------------ */
+  function isText(f) { return /\.(txt|md|text)$/i.test(f.name) || (f.type && f.type.startsWith('text/')); }
+
+  function readFiles(fileList) {
+    const files = Array.from(fileList);
+    const ok = files.filter(isText);
+    if (ok.length < files.length) showError('Only plain-text files (.txt) are supported. Other files were skipped.');
+    else showError('');
+    return Promise.all(ok.map(f => f.text().then(text => ({ name: f.name, text }))));
+  }
+
+  function loadDocFiles(fileList) {
+    readFiles(fileList).then(files => {
+      if (!files.length) return;
+      $('docText').value = files[0].text;
+      state.docName = files[0].name;
+      updateMeta();
+    });
+  }
+
+  function loadSourceFiles(fileList) {
+    readFiles(fileList).then(files => {
+      if (!files.length) return;
+      if (state.sources.length === 1 && !state.sources[0].text.trim() && !state.sources[0].name.trim()) state.sources = [];
+      files.forEach(f => state.sources.push(makeSource(f.name, f.text)));
+      state.active = state.sources[state.sources.length - 1].id;
+      renderTabs(); syncEditor();
+    });
+  }
+
+  function enableDrop(panel, handler) {
+    panel.addEventListener('dragover', e => { e.preventDefault(); panel.classList.add('drag'); });
+    panel.addEventListener('dragleave', e => { if (!panel.contains(e.relatedTarget)) panel.classList.remove('drag'); });
+    panel.addEventListener('drop', e => {
+      e.preventDefault();
+      panel.classList.remove('drag');
+      if (e.dataTransfer && e.dataTransfer.files.length) handler(e.dataTransfer.files);
+    });
+  }
+
+  /* ------------------------------------------------------------------
+   * Run a check
+   * ------------------------------------------------------------------ */
+  function runCheck() {
+    const docText = $('docText').value;
+    const n = parseInt($('optN').value, 10);
+    const ignoreCommon = $('optStop').checked;
+    const sources = state.sources.filter(s => s.text.trim()).map(s => ({ name: displayName(s), text: s.text }));
+
+    if (!docText.trim()) { showError('Add the document you want to check.'); $('docText').focus(); return; }
+    if (!sources.length) { showError('Add at least one source to compare against.'); $('srcText').focus(); return; }
+
+    const docNG = nGrams(filterTokens(tokenize(docText), ignoreCommon), n);
+    if (!docNG.length) {
+      showError('The document is too short to analyse. It needs at least ' + n + ' meaningful words.');
+      return;
+    }
+    showError('');
+
+    const results = mergeSort(sources.map(s => compare(docNG, s, n, ignoreCommon)));
+    state.run = { docText, docName: state.docName, n, ignoreCommon, results, date: new Date() };
+    renderResults();
+  }
+
+  function renderResults() {
+    const run = state.run;
+    const top = run.results[0];
+    const v = verdict(top.sim);
+    $('results').hidden = false;
+    $('topScore').textContent = pct(top.sim);
+    $('topScore').style.color = v.color;
+    $('topVerdict').className = 'chip ' + v.cls;
+    $('topVerdict').textContent = v.label;
+    $('topDesc').textContent = top.sim > 0 ? v.desc : 'No matching phrases were found in any source.';
+    $('topName').textContent = top.name;
+
+    const list = $('rankList');
+    list.innerHTML = '';
+    run.results.forEach((r, i) => {
+      const rv = verdict(r.sim);
+      const li = document.createElement('li');
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'rank-item';
+      b.setAttribute('aria-pressed', 'false');
+      b.innerHTML =
+        '<span class="rank-name"></span>' +
+        '<span class="rank-pct" style="color:' + rv.color + '">' + pct(r.sim) + '</span>' +
+        '<span class="rank-bar"><span style="width:' + Math.min(100, r.sim * 100) + '%;background:' + rv.color + '"></span></span>' +
+        '<span class="rank-meta">' + (r.tooShort ? 'Too short to compare' : rv.label + ' · ' + plural(r.phrases.length, 'matching phrase')) + '</span>';
+      b.querySelector('.rank-name').textContent = r.name;
+      b.addEventListener('click', () => renderDetail(i));
+      li.appendChild(b);
+      list.appendChild(li);
+    });
+    renderDetail(0);
+    $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderDetail(i) {
+    const run = state.run;
+    const r = run.results[i];
+    state.selected = i;
+    document.querySelectorAll('#rankList .rank-item').forEach((el, j) => el.setAttribute('aria-pressed', String(i === j)));
+    $('detailName').textContent = r.name;
+    $('detailStats').textContent = r.tooShort
+      ? 'This source is too short to compare.'
+      : r.inter + ' of ' + r.docCount + ' phrases in your document also appear here';
+
+    let html = '', cursor = 0;
+    for (const [s, e] of r.ranges) {
+      html += escapeHtml(run.docText.slice(cursor, s)) + '<mark>' + escapeHtml(run.docText.slice(s, e)) + '</mark>';
+      cursor = e;
+    }
+    $('docView').innerHTML = html + escapeHtml(run.docText.slice(cursor));
+
+    $('phraseCount').textContent = '(' + r.phrases.length + ')';
+    const pl = $('phraseList');
+    pl.innerHTML = '';
+    if (!r.phrases.length) {
+      pl.innerHTML = '<span class="muted">No matching phrases with this source.</span>';
+    } else {
+      r.phrases.forEach(p => {
+        const el = document.createElement('span');
+        el.className = 'phrase';
+        el.textContent = p;
+        pl.appendChild(el);
+      });
+    }
+  }
+
+  /* ------------------------------------------------------------------
+   * Report
+   * ------------------------------------------------------------------ */
+  function downloadReport() {
+    const run = state.run;
+    if (!run) return;
+    const line = '-'.repeat(64);
+    const out = [];
+    out.push('SEMANTIC PLAGIARISM DETECTOR - SIMILARITY REPORT', line);
+    out.push('Generated : ' + run.date.toLocaleString());
+    out.push('Document  : ' + run.docName + ' (' + plural(wordCount(run.docText), 'word') + ')');
+    out.push('Settings  : ' + run.n + '-word phrases, common words ' + (run.ignoreCommon ? 'ignored' : 'included'));
+    out.push('Result    : ' + pct(run.results[0].sim) + ' highest similarity (' + verdict(run.results[0].sim).label + ')', '');
+    out.push('RANKED SOURCES', line);
+    run.results.forEach((r, i) => {
+      out.push(String(i + 1).padEnd(4) + pct(r.sim).padStart(7) + '   ' + verdict(r.sim).label.padEnd(15) + r.name);
+    });
+    run.results.forEach(r => {
+      out.push('', 'MATCHING PHRASES: ' + r.name + ' (' + r.phrases.length + ')', line);
+      if (!r.phrases.length) out.push('  none');
+      r.phrases.forEach(p => out.push('  - ' + p));
+    });
+    out.push('', line, 'Score = shared phrases / total phrases across both texts (Jaccard index).');
+    const blob = new Blob([out.join('\n') + '\n'], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'similarity-report.txt';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  /* ------------------------------------------------------------------
+   * Example and reset
+   * ------------------------------------------------------------------ */
+  const EXAMPLE = {
+    doc: `Machine learning is a branch of artificial intelligence that enables systems
+to learn from data and improve their performance over time without being
+explicitly programmed. It uses algorithms to parse data and make informed
+decisions. Machine learning is applied in fields like computer vision and
+natural language processing.
+
+Deep learning, a subset of machine learning, uses neural networks with many
+layers to model complex patterns. These deep neural networks are inspired by
+the structure of the human brain, and deep learning has achieved remarkable
+results in image recognition and language translation.
+
+This technology has completely transformed modern computing and continues to
+shape the future of automation and intelligent systems across all industries.`,
+    sources: [
+      ['machine-learning-overview.txt', `Machine learning is a branch of artificial intelligence that enables systems
+to learn from data and improve their performance over time without being
+explicitly programmed. It uses algorithms to parse data, learn from it, and
+make informed decisions. Machine learning is applied in many fields including
+computer vision, natural language processing, and speech recognition.
+
+Deep learning is a subset of machine learning that uses neural networks with
+multiple layers to model complex patterns in data. These deep neural networks
+are inspired by the structure and function of the human brain. Deep learning
+has achieved remarkable results in image recognition, language translation,
+and autonomous driving systems.
+
+Supervised learning is a type of machine learning where the model is trained
+on labelled data. The algorithm learns to map inputs to outputs based on
+example input-output pairs. Classification and regression are two key tasks
+performed using supervised learning algorithms.
+
+Unsupervised learning, on the other hand, finds hidden patterns in data
+without labelled responses. Clustering, dimensionality reduction, and
+generative modelling are common unsupervised learning techniques. The
+k-means clustering algorithm is a popular unsupervised learning method.
+
+Reinforcement learning is a paradigm where an agent learns to make decisions
+by interacting with an environment to maximise a cumulative reward signal.
+This approach has led to breakthroughs in game playing, robotics, and
+resource management systems.`],
+      ['data-structures-intro.txt', `Data structures are specialised formats for organising, processing, retrieving
+and storing data. They make it easier to manipulate data efficiently. Common
+data structures include arrays, linked lists, stacks, queues, trees and graphs.
+Choosing the right data structure for a problem is key to writing efficient algorithms.
+
+An array is a collection of elements stored at contiguous memory locations.
+It is the simplest and most widely used data structure. Arrays support random
+access in O(1) time but insertions and deletions take O(n) time. Static arrays
+have a fixed size, while dynamic arrays can resize themselves at runtime.
+
+A linked list is a linear data structure where each element, called a node,
+contains data and a pointer to the next node. Unlike arrays, linked lists do
+not require contiguous memory. Insertion and deletion at the head of a linked
+list take O(1) time. Traversal from the head to any node takes O(n) time.
+
+A stack is a linear data structure that follows the Last-In-First-Out (LIFO)
+principle. The push operation adds an element to the top, and the pop operation
+removes the top element. Stacks are used in function call management, expression
+evaluation, and backtracking algorithms.
+
+A queue is a linear data structure that follows the First-In-First-Out (FIFO)
+principle. Elements are added at the rear and removed from the front. Queues
+are widely used in scheduling, breadth-first search, and buffering applications.
+
+Sorting algorithms arrange elements of a list in a specific order. Common
+sorting algorithms include bubble sort, insertion sort, selection sort, merge
+sort, quick sort, and heap sort. Merge sort and quick sort are efficient
+divide-and-conquer algorithms with average time complexity of O(n log n).`]
+    ]
+  };
+  const unwrap = t => t.replace(/([^\n])\n(?!\n)/g, '$1 ');
+
+  function loadExample() {
+    $('docText').value = unwrap(EXAMPLE.doc);
+    state.docName = 'submission.txt';
+    state.sources = EXAMPLE.sources.map(([name, text]) => makeSource(name, unwrap(text)));
+    state.active = state.sources[0].id;
+    renderTabs(); syncEditor(); showError('');
+  }
+
+  function clearAll() {
+    $('docText').value = '';
+    state.docName = 'Pasted text';
+    state.sources = [makeSource()];
+    state.active = state.sources[0].id;
+    state.run = null;
+    $('results').hidden = true;
+    renderTabs(); syncEditor(); showError('');
+  }
+
+  /* ------------------------------------------------------------------
+   * Wire up
+   * ------------------------------------------------------------------ */
+  $('docText').addEventListener('input', () => { updateMeta(); });
+  $('srcText').addEventListener('input', e => { activeSource().text = e.target.value; updateMeta(); });
+  $('srcName').addEventListener('input', e => {
+    activeSource().name = e.target.value;
+    const btn = document.querySelector('#tabs .tab.active .tab-main');
+    if (btn) btn.textContent = displayName(activeSource());
+  });
+  $('docFile').addEventListener('change', e => { loadDocFiles(e.target.files); e.target.value = ''; });
+  $('srcFiles').addEventListener('change', e => { loadSourceFiles(e.target.files); e.target.value = ''; });
+  enableDrop($('docPanel'), loadDocFiles);
+  enableDrop($('srcPanel'), loadSourceFiles);
+  $('btnCheck').addEventListener('click', runCheck);
+  $('btnExample').addEventListener('click', loadExample);
+  $('btnClear').addEventListener('click', clearAll);
+  $('btnReport').addEventListener('click', downloadReport);
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); runCheck(); }
+  });
+  if (/Mac|iPhone|iPad/.test(navigator.platform || '')) document.querySelector('.kbd').textContent = '⌘ + Enter';
+
+  clearAll();
+})();
+</script>
+</body>
+</html>

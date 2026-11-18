@@ -1,236 +1,134 @@
-<div align="center">
+# Semantic Plagiarism Detector
 
-# 🔍 Semantic Plagiarism Detector
+**Find copied content in seconds.** Compare a document against any number of sources and get a similarity score for each source, a clear verdict, and every matching passage highlighted.
 
-**An AI-powered, CLI-based plagiarism detection engine built from scratch in C++17**
+**[Live demo](https://pranav-0712.github.io/semantic-plagiarism-detector/)** · [How it works](#how-it-works) · [Run the desktop engine](#desktop-engine-c)
 
-![C++17](https://img.shields.io/badge/C%2B%2B-17-blue?style=for-the-badge&logo=cplusplus)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-Complete-brightgreen?style=for-the-badge)
-![FDS Project](https://img.shields.io/badge/FDS-Mini%20Project-orange?style=for-the-badge)
-![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-lightgrey?style=for-the-badge)
-
-*SY B.Tech IT | Fundamentals of Data Structures | Pranav*
-
-</div>
+![Semantic Plagiarism Detector](docs/assets/preview.png)
 
 ---
 
-## 📌 About
+## Overview
 
-The **Semantic Plagiarism Detector** compares a suspect document against a corpus of reference documents and produces a quantitative similarity score using **N-Gram Analysis** and **Jaccard Similarity**. Every component — from storage to sorting — is implemented using fundamental data structures, making this a complete applied FDS showcase.
+Semantic Plagiarism Detector consists of two parts that share the same detection algorithm:
 
-No external libraries. No shortcuts. Pure C++17 + Data Structures.
-
----
-
-## ✨ Features
-
-- 📂 **Dynamic Document Store** — Singly Linked List stores reference documents at runtime
-- 🔤 **Text Preprocessing** — Lowercase normalization, punctuation stripping, tokenization
-- 🗂️ **Stop-Word Filtering** — Stack ADT-based filter removes semantic noise
-- 🔗 **Trigram Generation** — Sliding-window 3-word n-grams from token arrays
-- 🔍 **Naive String Matching** — Classic Unit 2 algorithm for trigram comparison
-- 📊 **Jaccard Similarity** — `|A ∩ B| / |A ∪ B|` for document similarity score
-- 📈 **Merge Sort Ranking** — Results ranked in descending order of similarity
-- 🏷️ **Verdict System** — HIGH / MODERATE / LOW / ORIGINAL classification
-- 💻 **Interactive CLI Menu** — Load, analyze, and report with simple numbered options
-
----
-
-## 🏫 FDS Concepts Applied
-
-| FDS Unit | Concept | Location in Code | Role in Pipeline |
-|---|---|---|---|
-| **Unit 1** | ADT Design + Big-O Analysis | `plagiarism_detector.h/.cpp` | Core engine interface & complexity docs |
-| **Unit 2** | Arrays, Strings, Naive String Matching | `string_matcher.h/.cpp` | Tokenizer, n-gram generator, trigram lookup |
-| **Unit 3** | Merge Sort + Linear Search | `sorter.h/.cpp` | Rank documents by similarity score |
-| **Unit 4** | Stack ADT (array-based, generic) | `stack.h` | Stop-word filter during preprocessing |
-| **Unit 5** | Singly Linked List | `document_store.h/.cpp` | Reference document corpus storage |
-
----
-
-## 🛠️ Installation & Build
-
-### Prerequisites
-
-| Platform | Requirement |
+| Component | Description |
 |---|---|
-| Windows | MinGW-w64 (g++ 10+) or MSVC 2019+ |
-| Linux / macOS | g++ 10+ or clang++ 12+ |
+| **Web app** ([`docs/index.html`](docs/index.html)) | A single-page application that runs entirely in the browser. No installation, no account, and no text is ever uploaded. |
+| **Desktop engine** ([`src/`](src)) | A dependency-free C++17 command-line application for managing a reference library and checking documents offline. |
 
-### Build on Windows (PowerShell)
+## Features
 
-```powershell
-# Clone the repository
-git clone https://github.com/pranav-0712/semantic-plagiarism-detector.git
-cd semantic-plagiarism-detector
+- **Many sources, one check.** Compare a document against multiple sources at once. Results are ranked from most to least similar.
+- **See exactly what matched.** Matching passages are highlighted in the document, with a full list of shared phrases per source.
+- **Private by design.** All processing happens locally. Documents never leave the device.
+- **Meaningful scores.** Common words such as "the" and "of" are ignored, so scores reflect shared content rather than shared grammar.
+- **Adjustable precision.** Choose a phrase length of 2 to 5 words.
+- **Downloadable reports.** Export a plain-text report with scores, verdicts and matched phrases.
+- **File support.** Paste text, or upload and drag in `.txt` files.
 
-# Compile
-g++ -std=c++17 -Wall -O2 `
-    src/main.cpp `
-    src/string_matcher.cpp `
-    src/document_store.cpp `
-    src/sorter.cpp `
-    src/plagiarism_detector.cpp `
-    -o plagiarism_detector.exe
+![Results view](docs/assets/results.png)
 
-# Run
-.\plagiarism_detector.exe
+## How it works
+
+1. **Clean.** Text is lowercased, punctuation is removed, and common words and words of two letters or fewer are filtered out.
+2. **Split.** The remaining words are broken into overlapping phrases (word n-grams, three words long by default).
+3. **Match.** Every phrase in the document is looked up in each source.
+4. **Score.** Each source receives a Jaccard similarity score, and sources are ranked from highest to lowest.
+
+```
+similarity = |A ∩ B| / |A ∪ B| = shared / (|A| + |B| − shared)
 ```
 
-### Build on Linux / macOS
+where `A` and `B` are the phrase sets of the source and the document.
+
+| Score | Verdict | Meaning |
+|---|---|---|
+| 25% and above | Likely copied | Large portions of the document match the source. |
+| 10% to 25% | Needs review | Several passages match. Check the highlighted text. |
+| Below 10% | Minor overlap | A few shared phrases, typical for documents on the same subject. |
+| 0% | No overlap | No shared phrases. |
+
+Detection works on word sequences. It finds copied and lightly edited text, including reordered sentences and small word changes. Text rewritten entirely in different words scores lower.
+
+## Data structures
+
+The engine is built on core data structures, each implemented from scratch.
+
+| Data structure | Where | Purpose |
+|---|---|---|
+| Singly linked list | `document_store.h/.cpp` | Stores the reference library. Documents can be added and removed at runtime. |
+| Stack (generic, array-based) | `stack.h` | Filters common words from the token stream. |
+| Arrays and strings | `string_matcher.h/.cpp` | Normalisation, tokenisation and n-gram generation. |
+| Naive string matching | `string_matcher.cpp` | Finds each document phrase in the reference text. |
+| Merge sort | `sorter.h/.cpp` | Ranks results by similarity, highest first. |
+| Linear search | `sorter.cpp`, `document_store.cpp` | Looks up documents and results by ID. |
+
+## Getting started
+
+### Web app
+
+Open [the live demo](https://pranav-0712.github.io/semantic-plagiarism-detector/), or open `docs/index.html` directly in any modern browser. No server or build step is needed. Click **Load example** to see a sample result.
+
+### Desktop engine (C++)
+
+Requires a C++17 compiler (g++ 10+, clang++ 12+ or MSVC 2019+).
 
 ```bash
-# Clone the repository
 git clone https://github.com/pranav-0712/semantic-plagiarism-detector.git
 cd semantic-plagiarism-detector
-
-# Compile
-g++ -std=c++17 -Wall -O2 \
-    src/main.cpp \
-    src/string_matcher.cpp \
-    src/document_store.cpp \
-    src/sorter.cpp \
-    src/plagiarism_detector.cpp \
-    -o plagiarism_detector
-
-# Run
+make
 ./plagiarism_detector
 ```
 
----
+Without `make`:
 
-## 🚀 How to Run
-
-```
-=================================================
-     AI Semantic Plagiarism Detector v1.0
-     FDS Mini Project | SY B.Tech IT | Pranav
-=================================================
-
-[MENU]
-  1. Load Reference Documents
-  2. Analyze Suspect Document
-  3. View Document Store
-  4. Clear All Documents
-  5. Exit
-Enter choice: 2
-
-[*] Analyzing suspect.txt...
-
---- PLAGIARISM REPORT ---
-Suspect : samples/suspect.txt
-Tokens  : 312  |  Trigrams: 310
-
-+----+-------------------------------+----------+-----------+----------+
-| #  | Reference Document            | Common Ƭ | Jaccard   | Verdict  |
-+----+-------------------------------+----------+-----------+----------+
-|  1 | Neural Network Survey (ID:2)  |   187    |  0.6823   | HIGH 🔴  |
-|  2 | Deep Learning Fundamentals(1) |    94    |  0.3105   | MOD. 🟡  |
-+----+-------------------------------+----------+-----------+----------+
-
-Top Matched Phrases (ID:2):
-  → "neural networks are"
-  → "gradient descent algorithm"
-  → "back propagation through"
-
-OVERALL VERDICT: 🔴 HIGH PLAGIARISM (68.23% — "Neural Network Survey")
+```bash
+g++ -std=c++17 -O2 -Wall -o plagiarism_detector src/*.cpp
 ```
 
----
+On Windows, run `plagiarism_detector.exe`.
 
-## 📁 Project Structure
+The interactive menu lets you:
+
+```
+1. Load reference document from file
+2. Add reference text (manual input)
+3. List all reference documents
+4. Remove a reference document
+5. Check a text file for plagiarism
+6. Check typed text for plagiarism
+7. Run demo with sample documents
+0. Exit
+```
+
+Sample documents for testing are in [`samples/`](samples).
+
+## Project structure
 
 ```
 semantic-plagiarism-detector/
-│
-├── src/
-│   ├── stack.h                   # 📦 Generic Stack ADT — template, array-based (Unit 4)
-│   ├── string_matcher.h          # 🔤 String Matcher interface (Unit 2)
-│   ├── string_matcher.cpp        # tokenize(), generateNgrams(), naiveMatch()
-│   ├── document_store.h          # 🔗 Linked List node + DocumentStore class (Unit 5)
-│   ├── document_store.cpp        # addDocument(), getAll(), findById()
-│   ├── sorter.h                  # 📈 MergeSort declarations (Unit 3)
-│   ├── sorter.cpp                # mergeSort(), merge()
-│   ├── plagiarism_detector.h     # 🧠 PlagiarismDetector interface (Unit 1 ADT)
-│   ├── plagiarism_detector.cpp   # analyze(), computeJaccard()
-│   └── main.cpp                  # 💻 CLI menu, entry point
-│
 ├── docs/
-│   └── report.md                 # 📄 Full FDS project report
-│
-├── samples/
-│   ├── ref1.txt                  # Reference document 1
-│   ├── ref2.txt                  # Reference document 2
-│   └── suspect.txt               # Sample suspect document
-│
-├── README.md
+│   ├── index.html              Web app (served by GitHub Pages)
+│   ├── assets/                 Screenshots
+│   └── report.md               Project report
+├── samples/                    Sample reference and suspect documents
+├── src/
+│   ├── main.cpp                Command-line interface
+│   ├── plagiarism_detector.*   Detection engine
+│   ├── document_store.*        Linked-list document library
+│   ├── string_matcher.*        Text processing and matching
+│   ├── sorter.*                Merge sort and linear search
+│   └── stack.h                 Generic stack
 └── Makefile
 ```
 
----
+## Roadmap
 
-## 🧠 Algorithm Overview
+- Hash-based or KMP matching for faster lookups on large libraries
+- Synonym handling to detect paraphrased text
+- PDF and DOCX import
 
-```
-Raw Text Files
-     │
-     ▼
-[DocumentStore — Singly Linked List]
-     │  addDocument() → O(1)
-     ▼
-[StringMatcher — Tokenizer]
-     │  lowercase + strip punctuation → token array
-     ▼
-[Stack ADT — Stop-Word Filter]
-     │  push/pop tokens → filtered array  → O(n)
-     ▼
-[N-Gram Generator — Sliding Window]
-     │  trigrams set  → O(n)
-     ▼
-[Naive String Matching — Intersection]
-     │  common trigrams → O(n·m)
-     ▼
-[Jaccard Similarity]
-     │  score = |A∩B| / |A∪B|
-     ▼
-[Merge Sort — Ranking]
-     │  descending by score → O(n log n)
-     ▼
-[Report + Verdict]
-     HIGH ≥60% | MODERATE ≥30% | LOW >0% | ORIGINAL =0%
-```
+## Author
 
----
-
-## 📊 Sample Results
-
-| Test Case | Suspect Type | Jaccard Score | Verdict |
-|---|---|---|---|
-| TC-1 | Near-verbatim copy | 68.23% | 🔴 HIGH |
-| TC-2 | Paraphrased content | 31.05% | 🟡 MODERATE |
-| TC-3 | Unrelated document | 0.00% | ✅ ORIGINAL |
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
-
----
-
-## 👨‍💻 Author
-
-**Pranav**  
-SY B.Tech Information Technology  
-FDS Mini Project | November 2026  
-🔗 [github.com/pranav-0712/semantic-plagiarism-detector](https://github.com/pranav-0712/semantic-plagiarism-detector)
-
----
-
-<div align="center">
-
-*Built with ❤️ and pure Data Structures — no shortcuts, no external libraries*
-
-</div>
+**Pranav** · [github.com/pranav-0712](https://github.com/pranav-0712)
