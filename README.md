@@ -110,6 +110,18 @@ The interactive menu lets you:
 
 Sample documents for testing are in [`samples/`](samples).
 
+### Single-file version
+
+[`practical/plagiarism_demo.cpp`](practical/plagiarism_demo.cpp) contains the complete engine in one file, with sample documents built in. It runs a step-by-step demonstration on start-up (three test cases: copied, partly copied and original), then opens an interactive menu.
+
+```bash
+cd practical
+g++ -std=c++17 -Wall plagiarism_demo.cpp -o plagiarism_demo
+./plagiarism_demo
+```
+
+On Windows, run `.\plagiarism_demo.exe`.
+
 ## Project structure
 
 ```
@@ -118,6 +130,8 @@ semantic-plagiarism-detector/
 │   ├── index.html              Web app (live on GitHub Pages)
 │   ├── assets/                 Screenshots
 │   └── report.md               Project report
+├── practical/
+│   └── plagiarism_demo.cpp     Single-file version with built-in demo
 ├── samples/                    Sample reference and suspect documents
 ├── src/
 │   ├── main.cpp                Command-line interface

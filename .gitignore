@@ -4,6 +4,7 @@
 *.o
 *.obj
 plagiarism_detector
+practical/plagiarism_demo
 
 # Build directories
 build/
