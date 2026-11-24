@@ -1,10 +1,10 @@
 # Semantic Plagiarism Detector
 
-**Find copied content in seconds.** Compare a document against any number of sources and get a similarity score for each source, a clear verdict, and every matching passage highlighted.
+Checks a piece of writing against the texts it might have been copied from. Both are cut into three-word phrases, the shared phrases are counted and scored, and every shared passage is highlighted.
 
 ### [Try it live: pranav-0712.github.io/semantic-plagiarism-detector](https://pranav-0712.github.io/semantic-plagiarism-detector/)
 
-No installation or sign-up. Open the link, click **Load example**, then **Check document**.
+No installation or sign-up. Open the link, click **Load example**, then **Check**.
 
 [How it works](#how-it-works) · [Run the desktop engine](#desktop-engine-c) · [Project report](docs/report.md)
 
@@ -25,6 +25,7 @@ Semantic Plagiarism Detector consists of two parts that share the same detection
 
 - **Many sources, one check.** Compare a document against multiple sources at once. Results are ranked from most to least similar.
 - **See exactly what matched.** Matching passages are highlighted in the document, with a full list of shared phrases per source.
+- **Step-by-step view.** After each check, the page shows what every data structure did with your text: the words the stack filtered out, the linked list of sources, the Jaccard calculation and each merge sort step.
 - **Private by design.** All processing happens locally. Documents never leave the device.
 - **Meaningful scores.** Common words such as "the" and "of" are ignored, so scores reflect shared content rather than shared grammar.
 - **Adjustable precision.** Choose a phrase length of 2 to 5 words.
@@ -32,6 +33,8 @@ Semantic Plagiarism Detector consists of two parts that share the same detection
 - **File support.** Paste text, or upload and drag in `.txt` files.
 
 ![Results view](docs/assets/results.png)
+
+![Step-by-step view of the data structures](docs/assets/steps.png)
 
 ## How it works
 
@@ -48,10 +51,10 @@ where `A` and `B` are the phrase sets of the source and the document.
 
 | Score | Verdict | Meaning |
 |---|---|---|
-| 25% and above | Likely copied | Large portions of the document match the source. |
-| 10% to 25% | Needs review | Several passages match. Check the highlighted text. |
-| Below 10% | Minor overlap | A few shared phrases, typical for documents on the same subject. |
-| 0% | No overlap | No shared phrases. |
+| 25% and above | High plagiarism | Large portions of the document match the source. |
+| 10% to 25% | Moderate | Several passages match. Check the highlighted text. |
+| Below 10% | Low similarity | A few shared phrases, typical for documents on the same subject. |
+| 0% | Original | No shared phrases. |
 
 Detection works on word sequences. It finds copied and lightly edited text, including reordered sentences and small word changes. Text rewritten entirely in different words scores lower.
 

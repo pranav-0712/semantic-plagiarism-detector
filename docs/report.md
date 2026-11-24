@@ -322,11 +322,15 @@ The web application makes the detector usable without installing a compiler or r
 - Paste text, upload `.txt` files, or drag and drop them onto the page.
 - Sources are ranked by Jaccard similarity using merge sort, with the same verdict thresholds as the C++ engine (25% and 10%).
 - Matching passages are highlighted in the document, and every shared n-gram is listed for each source.
+- A step-by-step view shows what each data structure did with the checked text: the words removed by the stack filter, the linked list of sources, the Jaccard calculation and every merge sort step.
+- A run log prints the pipeline stages one by one, mirroring the output of the C++ program.
 - Adjustable n-gram size (2 to 5 words) and an option to include or ignore stop-words.
 - Downloadable plain-text similarity report.
 - Responsive layout for desktop and mobile, with light and dark themes.
 
 ![Results view](assets/results.png)
+
+![Step-by-step view](assets/steps.png)
 
 ### 6.3 Technology and Hosting
 
@@ -342,18 +346,18 @@ Both implementations were run on the same inputs and produce the same scores. Th
 
 | Suspect text | Reference | C++ engine | Web application |
 |---|---|---|---|
-| `suspect_high_plagiarism.txt` | `reference_ml.txt` | 25.86% (HIGH) | 25.9% (Likely copied) |
-| `suspect_high_plagiarism.txt` | `reference_ds.txt` | 0.00% (ORIGINAL) | 0.0% (No overlap) |
-| `suspect_original.txt` | `reference_ml.txt` | 0.00% (ORIGINAL) | 0.0% (No overlap) |
-| Built-in demo, Suspect 1 | Built-in demo, ML reference | 16.33% (MODERATE) | 16.3% (Needs review) |
+| `suspect_high_plagiarism.txt` | `reference_ml.txt` | 25.86% (HIGH) | 25.9% (High plagiarism) |
+| `suspect_high_plagiarism.txt` | `reference_ds.txt` | 0.00% (ORIGINAL) | 0.0% (Original) |
+| `suspect_original.txt` | `reference_ml.txt` | 0.00% (ORIGINAL) | 0.0% (Original) |
+| Built-in demo, Suspect 1 | Built-in demo, ML reference | 16.33% (MODERATE) | 16.3% (Moderate) |
 
 ### 6.5 How to Use
 
 1. Open the [live website](https://pranav-0712.github.io/semantic-plagiarism-detector/), or open `docs/index.html` in any modern browser.
-2. Paste or upload the document to check in **Document to check**.
-3. Add one or more sources in **Sources to compare against**. Use **+ Add source** or **Upload files** for multiple sources.
-4. Click **Check document** (or press Ctrl + Enter).
-5. Review the ranked sources, select one to see its highlighted matches, and click **Download report** to save the results.
+2. Paste or open the text to check in **Text to check**.
+3. Add one or more sources under **Sources**. Use **+ add source** or **Open .txt files** for multiple sources.
+4. Click **Check** (or press Ctrl + Enter).
+5. Review the ranked sources, select one to see its highlighted matches and calculation, and click **Download report** to save the results.
 
 Click **Load example** to run a check on the bundled sample documents.
 
