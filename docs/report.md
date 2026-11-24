@@ -318,19 +318,17 @@ The web application makes the detector usable without installing a compiler or r
 
 ### 6.2 Features
 
-- Compare one document against any number of reference sources in a single check.
-- Paste text, upload `.txt` files, or drag and drop them onto the page.
+- Compare one document against any number of reference sources in a single check. Each source has its own highlight colour.
+- Paste text, open `.txt` files, or drag and drop them onto the page.
 - Sources are ranked by Jaccard similarity using merge sort, with the same verdict thresholds as the C++ engine (25% and 10%).
-- Matching passages are highlighted in the document, and every shared n-gram is listed for each source.
-- A step-by-step view shows what each data structure did with the checked text: the words removed by the stack filter, the linked list of sources, the Jaccard calculation and every merge sort step.
-- A run log prints the pipeline stages one by one, mirroring the output of the C++ program.
+- **Passages to fix:** every copied passage is shown next to where it appears in the source, with actions to show it in the text, copy it as a quotation with its source, or mark it as cited. Marking a passage as cited removes it from the calculation and the score updates immediately.
+- A strip shows where the copied passages are located in the document.
+- Text inside quotation marks is skipped by default, since quoted text is already cited.
+- A plain-language recommendation is shown with every result.
+- An optional "How this score was calculated" panel shows what each data structure did with the checked text: the words removed by the stack filter, the linked list of sources, the Jaccard calculation and every merge sort step.
 - Adjustable n-gram size (2 to 5 words) and an option to include or ignore stop-words.
-- Downloadable plain-text similarity report.
-- Responsive layout for desktop and mobile, with light and dark themes.
-
-![Results view](assets/results.png)
-
-![Step-by-step view](assets/steps.png)
+- Downloadable plain-text report listing scores, passages and cited passages.
+- Text is saved in the browser between visits. Responsive layout for desktop and mobile, with light and dark themes.
 
 ### 6.3 Technology and Hosting
 
@@ -354,12 +352,12 @@ Both implementations were run on the same inputs and produce the same scores. Th
 ### 6.5 How to Use
 
 1. Open the [live website](https://pranav-0712.github.io/semantic-plagiarism-detector/), or open `docs/index.html` in any modern browser.
-2. Paste or open the text to check in **Text to check**.
-3. Add one or more sources under **Sources**. Use **+ add source** or **Open .txt files** for multiple sources.
-4. Click **Check** (or press Ctrl + Enter).
-5. Review the ranked sources, select one to see its highlighted matches and calculation, and click **Download report** to save the results.
+2. Paste or open the text to check in **Your text**.
+3. Add one or more sources under **Sources**. Use **+ Add source** or **Open files** for multiple sources.
+4. Click **Check for copied text** (or press Ctrl + Enter).
+5. Review the ranked sources and the **Passages to fix**. Use **Mark as cited** for passages that are properly referenced, and click **Download report** to save the results.
 
-Click **Load example** to run a check on the bundled sample documents.
+Click **Try an example** to run a check on the bundled sample documents.
 
 ---
 
