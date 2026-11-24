@@ -327,7 +327,9 @@ The web application makes the detector usable without installing a compiler or r
 - A plain-language recommendation is shown with every result.
 - An optional "How this score was calculated" panel shows what each data structure did with the checked text: the words removed by the stack filter, the linked list of sources, the Jaccard calculation and every merge sort step.
 - Adjustable n-gram size (2 to 5 words) and an option to include or ignore stop-words.
-- Downloadable plain-text report listing scores, passages and cited passages.
+- Key figures with every result: share of words found in a source, matching passages, sources compared and passages marked as cited.
+- The result can be saved as a formatted PDF report (via the browser's print dialog) or downloaded as plain text.
+- A built-in **Quick demo** walks a new user through the page in five steps (text, sources, check, result, fixing passages) and runs a real check on example texts.
 - Text is saved in the browser between visits. Responsive layout for desktop and mobile, with light and dark themes.
 
 ### 6.3 Technology and Hosting
@@ -355,9 +357,9 @@ Both implementations were run on the same inputs and produce the same scores. Th
 2. Paste or open the text to check in **Your text**.
 3. Add one or more sources under **Sources**. Use **+ Add source** or **Open files** for multiple sources.
 4. Click **Check for copied text** (or press Ctrl + Enter).
-5. Review the ranked sources and the **Passages to fix**. Use **Mark as cited** for passages that are properly referenced, and click **Download report** to save the results.
+5. Review the ranked sources and the **Passages to fix**. Use **Mark as cited** for passages that are properly referenced, then select **Save as PDF** or **Download .txt** to keep the results.
 
-Click **Try an example** to run a check on the bundled sample documents.
+Select **Quick demo** for a guided walkthrough, or click **Try an example** to run a check on the bundled sample documents.
 
 ---
 

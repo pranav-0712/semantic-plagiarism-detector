@@ -4,7 +4,7 @@ Checks a piece of writing against the texts it might have been copied from. Both
 
 ### [Try it live: pranav-0712.github.io/semantic-plagiarism-detector](https://pranav-0712.github.io/semantic-plagiarism-detector/)
 
-No installation or sign-up. Open the link, click **Try an example**, then **Check for copied text**.
+No installation or sign-up. Open the link and select **Quick demo** for a five-step walkthrough, or click **Try an example**, then **Check for copied text**.
 
 [How it works](#how-it-works) · [Run the desktop engine](#desktop-engine-c) · [Project report](docs/report.md)
 
@@ -27,8 +27,10 @@ Semantic Plagiarism Detector consists of two parts that share the same detection
 - **Passages to fix.** Every copied passage is listed next to the place it came from in the source, with one-click actions: **Show in text**, **Copy as quote** (adds the source) and **Mark as cited** (the score is recalculated straight away).
 - **Where the matches are.** A strip shows where copied passages sit in your text. Click a mark to jump to it.
 - **Quotations are skipped.** Text inside quotation marks is treated as already cited and left out of the score (can be turned off).
-- **Clear advice.** The result says what to do next, not just a number.
+- **Clear advice.** The result says what to do next, with key figures: share of words found in a source, matching passages, sources compared and passages marked as cited.
 - **How the score was calculated.** An optional panel shows what each data structure did with your text: the words the stack filtered out, the linked list of sources, the Jaccard calculation and each merge sort step.
+- **Professional report.** Save the result as a PDF (score, sources, highlighted text and passages) or download it as plain text.
+- **Quick demo.** A built-in, five-step guided walkthrough that runs a real check on example texts.
 - **Your work is kept.** Text is saved in the browser, so a reload doesn't lose it.
 - **Private by design.** All processing happens locally. Documents never leave the device.
 - **Meaningful scores.** Common words such as "the" and "of" are ignored, so scores reflect shared content rather than shared grammar.
@@ -79,7 +81,7 @@ The engine is built on core data structures, each implemented from scratch.
 
 ### Web app
 
-Open the live site at **https://pranav-0712.github.io/semantic-plagiarism-detector/**, or open `docs/index.html` directly in any modern browser. No server or build step is needed. Click **Try an example** to see a sample result.
+Open the live site at **https://pranav-0712.github.io/semantic-plagiarism-detector/**, or open `docs/index.html` directly in any modern browser. No server or build step is needed. Select **Quick demo** for a guided walkthrough, or click **Try an example** to see a sample result.
 
 The site is deployed with GitHub Pages from the `docs/` folder of the `main` branch. Every push to `main` updates it automatically.
 

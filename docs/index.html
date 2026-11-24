@@ -4,26 +4,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Semantic Plagiarism Detector</title>
-  <meta name="description" content="Paste your writing and the sources it might come from. See what matches, where it came from, and fix it." />
+  <meta name="description" content="Compare a document with the sources it may have come from. See every matching passage, where it came from, and how to fix it." />
   <meta property="og:title" content="Semantic Plagiarism Detector" />
   <meta property="og:description" content="Find copied text, see where it came from, and fix it." />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="https://pranav-0712.github.io/semantic-plagiarism-detector/assets/preview.png" />
+  <meta name="theme-color" content="#3d6b5f" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%233d6b5f'/%3E%3Cpath d='M16 9.7A7 7 0 0 1 16 22.3A7 7 0 0 1 16 9.7Z' fill='%23fbe4a8'/%3E%3Ccircle cx='13' cy='16' r='7' fill='none' stroke='white' stroke-width='1.8'/%3E%3Ccircle cx='19' cy='16' r='7' fill='none' stroke='white' stroke-width='1.8'/%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
       --bg: #f5f4ef;
       --surface: #ffffff;
       --surface-2: #f3f1eb;
       --surface-3: #ebe8e0;
-      --ink: #2a2d2e;
-      --ink-2: #55595c;
-      --ink-3: #85898b;
-      --line: #e7e4dc;
-      --line-2: #d6d2c8;
+      --ink: #26292a;
+      --ink-2: #53575a;
+      --ink-3: #83878a;
+      --line: #e6e3db;
+      --line-2: #d5d1c7;
       --accent: #3d6b5f;
       --accent-2: #2f574d;
       --accent-soft: #e3ede8;
@@ -32,18 +33,18 @@
       --mod: #9c6618;  --mod-bg: #f5ebd7;
       --low: #4b7955;  --low-bg: #e3eee4;
       --none: #6a6e70; --none-bg: #ecebe5;
-      /* one soft highlight (c) and one strong dot colour (d) per source */
+      /* per source: soft highlight (c) and solid colour (d) */
       --c0: #fbe3a4; --d0: #d29d16;
       --c1: #d2e4f4; --d1: #4a89c0;
       --c2: #f5d5da; --d2: #c96374;
       --c3: #d8ead3; --d3: #579257;
       --c4: #e4dcf3; --d4: #846cbf;
       --c5: #f4ddc6; --d5: #c58146;
-      --mark-ink: #2a2d2e;
+      --mark-ink: #26292a;
+      --shade: rgba(20, 24, 22, .55);
       --shadow: 0 1px 2px rgba(40, 38, 30, .04), 0 10px 30px rgba(40, 38, 30, .06);
       --r: 16px;
       --r-sm: 10px;
-      --serif: 'Source Serif 4', Georgia, serif;
       --sans: 'Source Sans 3', system-ui, -apple-system, 'Segoe UI', sans-serif;
       --mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
     }
@@ -59,6 +60,7 @@
         --c2: #532a33; --d2: #e48b99; --c3: #254123; --d3: #85c083;
         --c4: #392f5e; --d4: #b2a0e5; --c5: #533a22; --d5: #e2a36e;
         --mark-ink: #f3f1ea;
+        --shade: rgba(0, 0, 0, .62);
         --shadow: 0 1px 2px rgba(0, 0, 0, .25), 0 10px 30px rgba(0, 0, 0, .25);
       }
     }
@@ -72,7 +74,7 @@
       --c0: #5c4a15; --d0: #e2b43c; --c1: #1f3d58; --d1: #7eb2df;
       --c2: #532a33; --d2: #e48b99; --c3: #254123; --d3: #85c083;
       --c4: #392f5e; --d4: #b2a0e5; --c5: #533a22; --d5: #e2a36e;
-      --mark-ink: #f3f1ea;
+      --mark-ink: #f3f1ea; --shade: rgba(0, 0, 0, .62);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -81,7 +83,7 @@
     body {
       font-family: var(--sans);
       font-size: 16.5px;
-      line-height: 1.65;
+      line-height: 1.6;
       color: var(--ink);
       background: var(--bg);
       -webkit-font-smoothing: antialiased;
@@ -92,38 +94,46 @@
     .wrap { max-width: 1160px; margin: 0 auto; padding: 0 28px; }
     .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
     .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); }
+    svg { flex-shrink: 0; }
 
     /* Header */
-    .bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 22px; padding-bottom: 22px; }
-    .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 1.05rem; color: var(--ink); text-decoration: none; }
+    .site { position: sticky; top: 0; z-index: 40; background: var(--bg); background: color-mix(in srgb, var(--bg) 88%, transparent); -webkit-backdrop-filter: saturate(160%) blur(10px); backdrop-filter: saturate(160%) blur(10px); border-bottom: 1px solid transparent; transition: border-color .2s; }
+    .site.scrolled { border-bottom-color: var(--line); }
+    .bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 64px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 1.04rem; letter-spacing: -.005em; color: var(--ink); text-decoration: none; white-space: nowrap; }
     .brand svg .lens { fill: var(--c0); }
     .brand svg circle { stroke: var(--accent); }
-    .bar a.gh { color: var(--ink-2); font-size: .95rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
-    .bar a.gh:hover { color: var(--ink); }
-
-    /* Hero */
-    .hero { padding: 26px 0 30px; max-width: 700px; }
-    .hero h1 { font-family: var(--serif); font-weight: 600; font-size: clamp(2rem, 4.4vw, 2.75rem); line-height: 1.12; letter-spacing: -.015em; margin-bottom: 12px; }
-    .hero p { font-size: 1.14rem; color: var(--ink-2); }
+    .nav { display: flex; align-items: center; gap: 6px; }
 
     /* Buttons */
     .btn {
       display: inline-flex; align-items: center; justify-content: center; gap: 7px;
       font: inherit; font-size: .93rem; font-weight: 600; line-height: 1.2;
-      padding: 9px 16px; border-radius: 10px; cursor: pointer; white-space: nowrap;
+      padding: 9px 16px; border-radius: 10px; cursor: pointer; white-space: nowrap; text-decoration: none;
       border: 1px solid var(--line-2); background: var(--surface); color: var(--ink);
-      transition: background .15s, border-color .15s, color .15s;
+      transition: background .15s, border-color .15s, color .15s, box-shadow .15s;
     }
     .btn:hover { border-color: var(--ink-3); }
-    .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); padding: 12px 22px; font-size: 1rem; }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
     .btn.primary:hover { background: var(--accent-2); border-color: var(--accent-2); }
     .btn.primary[disabled] { opacity: .75; cursor: progress; }
+    .btn.lg { padding: 12px 22px; font-size: 1rem; }
     .btn.sm { padding: 6px 12px; font-size: .86rem; font-weight: 500; border-radius: 8px; }
-    .btn.ghost { background: transparent; }
+    .btn.ghost { background: transparent; border-color: transparent; color: var(--ink-2); }
+    .btn.ghost:hover { background: var(--surface-2); color: var(--ink); }
     .btn.soft { background: var(--accent-soft); border-color: transparent; color: var(--accent-2); }
     .btn.soft:hover { border-color: var(--accent); }
     .linkish { font: inherit; font-size: .93rem; background: none; border: none; padding: 4px 2px; cursor: pointer; color: var(--ink-2); text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 4px; }
     .linkish:hover { color: var(--ink); text-decoration-color: var(--ink-3); }
+    .play { width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: inline-flex; align-items: center; justify-content: center; }
+
+    /* Hero */
+    .hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px 32px; flex-wrap: wrap; padding: 34px 0 28px; }
+    .hero-text { max-width: 660px; }
+    .hero h1 { font-size: clamp(1.9rem, 4vw, 2.6rem); font-weight: 700; line-height: 1.12; letter-spacing: -.025em; margin-bottom: 10px; }
+    .hero p { font-size: 1.12rem; color: var(--ink-2); }
+    .demo-cta { display: flex; align-items: center; gap: 12px; }
+    .demo-cta small { font-size: .86rem; color: var(--ink-3); }
 
     /* Fields */
     textarea, input[type="text"], select { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line-2); border-radius: var(--r-sm); }
@@ -134,20 +144,20 @@
     textarea::placeholder, input::placeholder { color: var(--ink-3); }
     input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); }
 
-    /* Tool */
+    /* Checker */
     .cols { display: grid; grid-template-columns: 1fr 1fr; }
-    .pane { display: flex; flex-direction: column; padding: 22px 24px 16px; min-width: 0; transition: background .15s; }
-    .pane + .pane { border-left: 1px solid var(--line); }
-    .pane.drag { background: var(--accent-soft); }
+    .pane { display: flex; flex-direction: column; padding: 22px 24px 16px; min-width: 0; border-radius: var(--r) 0 0 0; transition: background .15s; }
+    .pane + .pane { border-left: 1px solid var(--line); border-radius: 0 var(--r) 0 0; }
+    .pane.drag { background: var(--accent-soft); outline: 2px dashed var(--accent); outline-offset: -10px; }
     .pane-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; min-height: 32px; }
     .pane-head h2 { display: flex; align-items: center; gap: 10px; font-size: 1.02rem; font-weight: 600; }
     .num { width: 24px; height: 24px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-2); font-size: .8rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
-    .pane-foot { margin-top: 8px; font-size: .84rem; color: var(--ink-3); }
+    .pane-foot { display: flex; justify-content: space-between; gap: 8px; margin-top: 8px; font-size: .84rem; color: var(--ink-3); }
     .tabs { display: flex; gap: 6px; margin-bottom: 10px; overflow-x: auto; padding: 2px 2px 4px; }
     .tab { display: inline-flex; align-items: center; flex-shrink: 0; max-width: 230px; border: 1px solid var(--line-2); border-radius: 999px; background: var(--surface); font-size: .86rem; color: var(--ink-2); }
     .tab.active { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); }
     .tab button { font: inherit; background: none; border: none; color: inherit; cursor: pointer; }
-    .tab .t-main { display: inline-flex; align-items: center; gap: 7px; padding: 5px 10px 5px 10px; overflow: hidden; min-width: 0; }
+    .tab .t-main { display: inline-flex; align-items: center; gap: 7px; padding: 5px 10px; overflow: hidden; min-width: 0; }
     .tab .t-main span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .tab .t-x { padding: 5px 10px 5px 0; color: var(--ink-3); font-size: 1rem; line-height: 1; }
     .tab .t-x:hover { color: var(--high); }
@@ -164,45 +174,56 @@
     .error { margin: 0 24px 18px; padding: 10px 14px; border-radius: var(--r-sm); background: var(--high-bg); color: var(--high); font-size: .93rem; }
 
     /* Progress */
-    .progress { margin-top: 18px; padding: 20px 24px; }
+    .progress { margin-top: 20px; padding: 20px 24px; }
     .progress ul { list-style: none; display: grid; gap: 8px; }
     .progress li { display: flex; align-items: center; gap: 10px; color: var(--ink-3); font-size: .97rem; }
     .progress li.done { color: var(--ink-2); }
     .progress li.now { color: var(--ink); }
     .tick { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--line-2); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .tick svg { display: none; }
     li.now .tick { border-color: var(--accent); border-right-color: transparent; animation: spin .8s linear infinite; }
     li.done .tick { border-color: var(--accent); background: var(--accent); }
     li.done .tick svg { display: block; }
-    .tick svg { display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    @media (prefers-reduced-motion: reduce) { li.now .tick { animation: none; } html { scroll-behavior: auto; } }
 
     /* Results */
-    .results { margin-top: 18px; scroll-margin-top: 16px; overflow: hidden; }
-    .summary { display: grid; grid-template-columns: auto 1fr auto; gap: 30px; align-items: center; padding: 28px 28px 22px; }
-    .score { font-family: var(--serif); font-size: 3.6rem; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; }
-    .score-sub { font-size: .88rem; color: var(--ink-3); margin-top: 6px; }
-    .pill { display: inline-block; font-size: .82rem; font-weight: 700; padding: 3px 11px; border-radius: 999px; margin-bottom: 8px; }
+    .results { margin-top: 20px; overflow: hidden; scroll-margin-top: 80px; animation: rise .35s ease both; }
+    @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    .print-head { display: none; }
+    .summary-wrap, #docPane, #srcPane, #btnCheck, #progress { scroll-margin-top: 84px; }
+    .summary { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 28px; align-items: center; padding: 26px 28px; }
+    .ring-wrap { position: relative; width: 128px; height: 128px; }
+    .ring { width: 128px; height: 128px; transform: rotate(-90deg); display: block; }
+    .ring circle { fill: none; stroke-width: 10; }
+    .ring .track { stroke: var(--surface-3); }
+    .ring .val { stroke-linecap: round; transition: stroke-dashoffset .9s cubic-bezier(.2, .7, .2, 1), stroke .3s; }
+    .ring-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .ring-text span { font-size: 1.75rem; font-weight: 700; letter-spacing: -.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+    .ring-text small { font-size: .78rem; color: var(--ink-3); }
+    .pill { display: inline-block; font-size: .8rem; font-weight: 700; padding: 3px 11px; border-radius: 999px; margin-bottom: 8px; }
     .v-high { color: var(--high); background: var(--high-bg); }
     .v-mod { color: var(--mod); background: var(--mod-bg); }
     .v-low { color: var(--low); background: var(--low-bg); }
     .v-none { color: var(--none); background: var(--none-bg); }
-    .advice { font-size: 1.06rem; color: var(--ink); max-width: 620px; }
-    .facts { font-size: .92rem; color: var(--ink-3); margin-top: 4px; }
-    .was { font-size: .88rem; color: var(--accent-2); margin-top: 4px; }
+    .advice { font-size: 1.06rem; line-height: 1.55; max-width: 620px; }
+    .was { font-size: .9rem; color: var(--accent-2); margin-top: 6px; }
     .actions { display: flex; flex-direction: column; gap: 8px; }
+    .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .kpi { padding: 14px 28px 16px; }
+    .kpi + .kpi { border-left: 1px solid var(--line); }
+    .kpi b { display: block; font-size: 1.35rem; font-weight: 700; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+    .kpi span { font-size: .86rem; color: var(--ink-3); }
 
-    .map { padding: 0 28px 24px; }
-    .map-label { font-size: .84rem; color: var(--ink-3); margin-bottom: 8px; }
+    .map { padding: 22px 28px 22px; }
+    .map-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: .86rem; color: var(--ink-3); margin-bottom: 8px; }
     .strip { position: relative; height: 14px; border-radius: 7px; background: var(--surface-3); overflow: hidden; }
     .strip button { position: absolute; top: 0; bottom: 0; min-width: 3px; border: none; padding: 0; cursor: pointer; }
-    .strip button.cited { background: repeating-linear-gradient(45deg, var(--line-2) 0 3px, transparent 3px 6px); }
-    .srcs { margin-top: 16px; display: grid; gap: 4px; }
-    .src-row {
-      width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer;
-      display: grid; grid-template-columns: 18px minmax(0, 1fr) 160px 64px 130px; gap: 14px; align-items: center;
-      padding: 9px 12px; border-radius: var(--r-sm); border: 1px solid transparent; background: none;
-    }
+    .strip button.cited { background: repeating-linear-gradient(45deg, var(--line-2) 0 3px, transparent 3px 6px); cursor: default; }
+    .srcs-head, .src-row { display: grid; grid-template-columns: 18px minmax(0, 1fr) 160px 64px 130px; gap: 14px; align-items: center; }
+    .srcs-head { padding: 18px 12px 6px; font-size: .74rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+    .srcs-head .h-sim { grid-column: 3 / 5; }
+    .srcs { display: grid; gap: 2px; }
+    .src-row { width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; padding: 9px 12px; border-radius: var(--r-sm); border: 1px solid transparent; background: none; }
     .src-row:hover { background: var(--surface-2); }
     .src-row[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
     .src-name { font-weight: 600; font-size: .95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -210,8 +231,8 @@
     .src-bar { height: 6px; border-radius: 3px; background: var(--surface-3); overflow: hidden; }
     .src-bar span { display: block; height: 100%; border-radius: 3px; }
     .src-pct { font-family: var(--mono); font-size: .9rem; font-weight: 500; text-align: right; }
-    .src-v { font-size: .84rem; color: var(--ink-3); }
-    .filter-note { font-size: .86rem; color: var(--ink-3); margin-top: 8px; }
+    .src-v { font-size: .86rem; color: var(--ink-3); }
+    .filter-note { font-size: .86rem; color: var(--ink-3); margin-top: 8px; padding-left: 12px; }
 
     .res-body { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); border-top: 1px solid var(--line); }
     .col { padding: 24px 28px; min-width: 0; }
@@ -222,23 +243,24 @@
     .doc mark { color: var(--mark-ink); border-radius: 3px; padding: .12em 0; cursor: pointer; -webkit-box-decoration-break: clone; box-decoration-break: clone; transition: box-shadow .2s; }
     .doc mark.flash, .passage.flash { box-shadow: 0 0 0 3px var(--accent); }
     .doc .cm { color: var(--ink-3); text-decoration: underline dotted var(--ink-3); text-underline-offset: 4px; }
-    .passages { max-height: 560px; overflow-y: auto; padding-right: 4px; display: grid; gap: 12px; align-content: start; }
-    .passage { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 14px 16px; transition: box-shadow .2s; }
+    .passages { max-height: 560px; overflow-y: auto; padding: 2px 4px 2px 2px; display: grid; gap: 12px; align-content: start; }
+    .passage { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 14px 16px; transition: box-shadow .2s; scroll-margin-top: 80px; }
     .p-head { display: flex; align-items: center; gap: 8px; font-size: .85rem; color: var(--ink-3); margin-bottom: 8px; }
+    .p-head .n { font-weight: 700; color: var(--ink-2); }
     .p-head b { color: var(--ink-2); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
     .p-head .w { margin-left: auto; white-space: nowrap; }
     .p-mine { font-size: .97rem; color: var(--ink); padding-left: 12px; border-left: 3px solid; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
     .p-from { margin-top: 10px; padding: 8px 12px; border-radius: 8px; background: var(--surface-2); font-size: .87rem; color: var(--ink-2); }
-    .p-from .lbl { display: block; font-size: .74rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 2px; }
+    .p-from .lbl { display: block; font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 2px; }
     .p-from mark { color: var(--mark-ink); border-radius: 3px; padding: .08em 0; }
     .p-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-    .cited-head { font-size: .86rem; color: var(--ink-3); margin: 8px 0 0; }
-    .passage.is-cited { padding: 10px 14px; opacity: .85; }
-    .passage.is-cited .p-mine { -webkit-line-clamp: 2; color: var(--ink-2); border-left-color: var(--line-2) !important; }
+    .cited-head { font-size: .86rem; color: var(--ink-3); margin-top: 6px; }
+    .passage.is-cited { padding: 10px 14px; }
+    .passage.is-cited .p-mine { -webkit-line-clamp: 2; color: var(--ink-3); border-left-color: var(--line-2) !important; }
     .empty { text-align: center; padding: 34px 16px; color: var(--ink-2); }
     .empty .ok { width: 44px; height: 44px; border-radius: 50%; background: var(--low-bg); color: var(--low); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px; }
 
-    /* Explanation (closed by default) */
+    /* How the score was calculated */
     .explain { border-top: 1px solid var(--line); }
     .explain summary { list-style: none; cursor: pointer; padding: 18px 28px; font-weight: 600; display: flex; align-items: center; gap: 10px; color: var(--ink-2); }
     .explain summary::-webkit-details-marker { display: none; }
@@ -283,96 +305,191 @@
     .merge .grp.out { border-color: var(--accent); background: var(--accent-soft); }
     .merge .op { color: var(--ink-3); }
 
-    footer { padding: 36px 0 48px; font-size: .9rem; color: var(--ink-3); }
-    .foot { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-    .foot a { color: var(--ink-2); }
+    footer { margin-top: 48px; border-top: 1px solid var(--line); }
+    .foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 22px; padding-bottom: 30px; font-size: .9rem; color: var(--ink-3); }
+    .foot .brand { font-size: .95rem; color: var(--ink-2); }
+    .foot a { color: var(--ink-2); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .foot a:hover { color: var(--ink); }
 
-    .toast { position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 999px; font-size: .92rem; box-shadow: var(--shadow); transition: opacity .2s, transform .2s; z-index: 20; }
+    .toast { position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 999px; font-size: .92rem; box-shadow: var(--shadow); transition: opacity .2s, transform .2s; z-index: 120; }
     .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    /* Guided demo */
+    .tour { position: fixed; inset: 0; z-index: 100; }
+    .tour-catch { position: absolute; inset: 0; transition: background .25s; }
+    .tour-catch.dim { background: var(--shade); }
+    .tour-hole { position: fixed; border-radius: 14px; box-shadow: 0 0 0 9999px var(--shade); pointer-events: none; transition: top .3s ease, left .3s ease, width .3s ease, height .3s ease; }
+    .tour-pop { position: fixed; width: 350px; max-width: calc(100vw - 24px); background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 16px 48px rgba(0, 0, 0, .22); padding: 18px 20px 16px; transition: top .3s ease, left .3s ease; }
+    .tour-pop.center { top: 50% !important; left: 50% !important; transform: translate(-50%, -50%); }
+    .tour-pop.sheet { top: auto !important; left: 12px !important; right: 12px; bottom: 12px; width: auto; max-width: none; }
+    .tour-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+    .tour-step { font-size: .76rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent-2); }
+    .tour-x { font: inherit; font-size: 1.2rem; line-height: 1; background: none; border: none; color: var(--ink-3); cursor: pointer; padding: 2px 4px; border-radius: 6px; }
+    .tour-x:hover { color: var(--ink); background: var(--surface-2); }
+    .tour-pop h3 { font-size: 1.12rem; font-weight: 700; letter-spacing: -.01em; margin-bottom: 6px; }
+    .tour-pop p { color: var(--ink-2); font-size: .96rem; }
+    .tour-foot { display: flex; align-items: center; gap: 8px; margin-top: 16px; }
+    .tour-dots { display: flex; gap: 5px; flex: 1; }
+    .tour-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line-2); }
+    .tour-dots i.on { background: var(--accent); width: 18px; border-radius: 4px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .results { animation: none; }
+      li.now .tick { animation: none; }
+      .ring .val, .tour-hole, .tour-pop, .toast { transition: none; }
+    }
 
     @media (max-width: 960px) {
       .res-body { grid-template-columns: minmax(0, 1fr); }
       .col + .col { border-left: none; border-top: 1px solid var(--line); }
-      .src-row { grid-template-columns: 18px minmax(0, 1fr) 100px 60px; }
-      .src-v { display: none; }
+      .srcs-head, .src-row { grid-template-columns: 18px minmax(0, 1fr) 100px 60px; }
+      .src-v, .srcs-head .h-v { display: none; }
     }
     @media (max-width: 760px) {
       .cols { grid-template-columns: 1fr; }
-      .pane + .pane { border-left: none; border-top: 1px solid var(--line); }
+      .pane + .pane { border-left: none; border-top: 1px solid var(--line); border-radius: 0; }
       textarea { min-height: 200px; }
-      .summary { grid-template-columns: 1fr; gap: 14px; }
-      .actions { flex-direction: row; flex-wrap: wrap; }
+      .summary { grid-template-columns: auto minmax(0, 1fr); gap: 18px 20px; }
+      .actions { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; }
+      .kpis { grid-template-columns: 1fr 1fr; }
+      .kpi:nth-child(3) { border-left: none; }
+      .kpi:nth-child(n + 3) { border-top: 1px solid var(--line); }
       .toolbar .spacer { display: none; }
       .toolbar .btn.primary { width: 100%; order: 10; }
       .step { grid-template-columns: 1fr; gap: 8px; }
+      .nav .t-label { display: none; }
     }
     @media (max-width: 560px) {
       .wrap { padding: 0 16px; }
+      .hero { padding-top: 22px; }
       .pane, .toolbar { padding-left: 16px; padding-right: 16px; }
       .options { padding: 0 16px 16px; }
       .error { margin: 0 16px 16px; }
       .summary, .map, .col, .trace { padding-left: 16px; padding-right: 16px; }
+      .kpi { padding-left: 16px; padding-right: 16px; }
       .explain summary { padding-left: 16px; padding-right: 16px; }
-      .src-row { grid-template-columns: 14px minmax(0, 1fr) 56px; gap: 10px; }
-      .src-bar, .src-name small { display: none; }
-      .score { font-size: 3rem; }
+      .summary { grid-template-columns: 1fr; }
+      .ring-wrap, .ring { width: 108px; height: 108px; }
+      .srcs-head, .src-row { grid-template-columns: 14px minmax(0, 1fr) 56px; gap: 10px; }
+      .srcs-head .h-sim { grid-column: 3 / 4; }
+      .src-bar, .src-name small, .pane-foot .hint { display: none; }
+      .bar .brand { font-size: .95rem; gap: 8px; }
+    }
+
+    /* Printed / PDF report: results only */
+    @media print {
+      :root:not([data-theme="print"]) {
+        --bg: #ffffff; --surface: #ffffff; --surface-2: #f5f4f0; --surface-3: #ebe8e0;
+        --ink: #1f2223; --ink-2: #44484b; --ink-3: #6f7376; --line: #dedad1; --line-2: #ccc7bc;
+        --accent: #3d6b5f; --accent-2: #2f574d; --accent-soft: #e3ede8;
+        --high: #a2452d; --high-bg: #f7e5df; --mod: #8e5c12; --mod-bg: #f5ebd7;
+        --low: #3f6c49; --low-bg: #e3eee4; --none: #5f6365; --none-bg: #ecebe5;
+        --c0: #fbe3a4; --d0: #d29d16; --c1: #d2e4f4; --d1: #4a89c0; --c2: #f5d5da; --d2: #c96374;
+        --c3: #d8ead3; --d3: #579257; --c4: #e4dcf3; --d4: #846cbf; --c5: #f4ddc6; --d5: #c58146;
+        --mark-ink: #1f2223;
+      }
+      @page { margin: 14mm; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      body { background: #fff; font-size: 11pt; }
+      .site, .hero, #tool, #progress, .actions, .p-actions, .filter-note, .explain, footer, .toast, .tour, .cited-head ~ .passage .w button { display: none !important; }
+      .wrap { max-width: none; padding: 0; }
+      .card { box-shadow: none; border: none; }
+      .results { margin: 0; overflow: visible; animation: none; }
+      .print-head { display: block; padding: 0 0 14px; margin-bottom: 6px; border-bottom: 2px solid var(--ink); }
+      .print-head .brand { font-size: 10pt; color: var(--ink-3); margin-bottom: 4px; }
+      .print-head h2 { font-size: 18pt; font-weight: 700; }
+      .print-head p { font-size: 9.5pt; color: var(--ink-2); }
+      .summary, .map, .col { padding-left: 0; padding-right: 0; }
+      .kpi:first-child { padding-left: 0; }
+      .res-body { grid-template-columns: 1fr; }
+      .col + .col { border-left: none; background: none; }
+      .doc, .passages { max-height: none; overflow: visible; }
+      .passage, .src-row, .summary, .kpis { break-inside: avoid; }
+      .p-mine { display: block; }
+      .ring .val { transition: none; }
+      .srcs-head, .src-row { grid-template-columns: 18px minmax(0, 1fr) 120px 64px 130px; }
+      .src-v, .srcs-head .h-v, .src-bar, .src-name small { display: block; }
+      .src-name small { display: inline; }
     }
   </style>
 </head>
 <body>
 
-<header>
+<header class="site" id="siteHeader">
   <div class="wrap bar">
     <a class="brand" href="./">
       <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><path class="lens" d="M16 9.7A7 7 0 0 1 16 22.3A7 7 0 0 1 16 9.7Z"/><circle cx="13" cy="16" r="7" fill="none" stroke-width="1.8"/><circle cx="19" cy="16" r="7" fill="none" stroke-width="1.8"/></svg>
-      Semantic Plagiarism Detector
+      <span>Semantic Plagiarism Detector</span>
     </a>
-    <a class="gh" href="https://github.com/pranav-0712/semantic-plagiarism-detector" target="_blank" rel="noopener">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.290 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.130-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-      GitHub
-    </a>
+    <nav class="nav" aria-label="Main">
+      <button class="btn sm ghost" id="btnTourTop" type="button" aria-label="Quick demo">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l5.5-3.5z" fill="currentColor" stroke="none"/></svg>
+        <span class="t-label">Quick demo</span>
+      </button>
+      <a class="btn sm ghost" href="https://github.com/pranav-0712/semantic-plagiarism-detector" target="_blank" rel="noopener" aria-label="Source code on GitHub">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span class="t-label">GitHub</span>
+      </a>
+    </nav>
   </div>
 </header>
 
 <main class="wrap">
   <section class="hero">
-    <h1>Find copied text, then fix it.</h1>
-    <p>Paste your writing and the sources it might come from. You'll see what matches, where each part came from, and what you can do about it.</p>
+    <div class="hero-text">
+      <h1>Find copied text, then fix it.</h1>
+      <p>Compare a document with the sources it may have come from. See every matching passage, where it came from, and how to fix it.</p>
+    </div>
+    <div class="demo-cta">
+      <button class="btn" id="btnTour" type="button"><span class="play"><svg width="10" height="10" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16l13-8z" fill="currentColor"/></svg></span>Quick demo</button>
+      <small>5 short steps</small>
+    </div>
   </section>
 
+  <!-- Checker -->
   <section class="card" id="tool" aria-label="Checker">
     <div class="cols">
       <div class="pane" id="docPane">
         <div class="pane-head">
           <h2><span class="num">1</span>Your text</h2>
-          <span><label class="btn sm ghost" for="docFile">Open file</label><input type="file" id="docFile" class="sr-only" accept=".txt,.md,text/plain" /></span>
+          <span>
+            <label class="btn sm" for="docFile"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg>Open file</label>
+            <input type="file" id="docFile" class="sr-only" accept=".txt,.md,text/plain" />
+          </span>
         </div>
         <label for="docText" class="sr-only">Your text</label>
         <textarea id="docText" placeholder="Paste the essay, assignment or article you want to check."></textarea>
-        <div class="pane-foot" id="docMeta">0 words</div>
+        <div class="pane-foot"><span id="docMeta">0 words</span><span class="hint">or drop a .txt file here</span></div>
       </div>
 
       <div class="pane" id="srcPane">
         <div class="pane-head">
           <h2><span class="num">2</span>Sources</h2>
-          <span><label class="btn sm ghost" for="srcFiles">Open files</label><input type="file" id="srcFiles" class="sr-only" accept=".txt,.md,text/plain" multiple /></span>
+          <span>
+            <label class="btn sm" for="srcFiles"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg>Open files</label>
+            <input type="file" id="srcFiles" class="sr-only" accept=".txt,.md,text/plain" multiple />
+          </span>
         </div>
         <div class="tabs" id="tabs"></div>
         <label for="srcName" class="sr-only">Source name</label>
         <input type="text" id="srcName" placeholder="Name (optional)" maxlength="80" />
         <label for="srcText" class="sr-only">Source text</label>
-        <textarea id="srcText" placeholder="Paste a book chapter, web page or another essay. Add as many sources as you like."></textarea>
-        <div class="pane-foot" id="srcMeta">0 words</div>
+        <textarea id="srcText" placeholder="Paste a book chapter, web page or another essay. Add as many sources as you need."></textarea>
+        <div class="pane-foot"><span id="srcMeta">0 words</span><span class="hint">drop several .txt files to add them all</span></div>
       </div>
     </div>
 
     <div class="toolbar">
-      <button class="btn sm ghost" id="btnOptions" type="button" aria-expanded="false" aria-controls="options">Options</button>
+      <button class="btn sm ghost" id="btnOptions" type="button" aria-expanded="false" aria-controls="options">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+        Options
+      </button>
       <button class="linkish" id="btnExample" type="button">Try an example</button>
       <button class="linkish" id="btnClear" type="button">Clear</button>
       <span class="spacer"></span>
       <span class="private"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Runs in your browser. Nothing is uploaded.</span>
-      <button class="btn primary" id="btnCheck" type="button">Check for copied text</button>
+      <button class="btn primary lg" id="btnCheck" type="button">Check for copied text</button>
     </div>
     <div class="options" id="options" hidden>
       <label>Phrase length
@@ -393,27 +510,43 @@
     <ul id="progressList"></ul>
   </section>
 
+  <!-- Results -->
   <section class="card results" id="results" aria-live="polite" hidden>
-    <div class="summary">
-      <div>
-        <div class="score" id="score">0%</div>
-        <div class="score-sub">similarity</div>
+    <div class="print-head">
+      <div class="brand">Semantic Plagiarism Detector</div>
+      <h2>Similarity report</h2>
+      <p id="printMeta"></p>
+    </div>
+
+    <div class="summary-wrap" id="summary">
+      <div class="summary">
+        <div class="ring-wrap">
+          <svg class="ring" viewBox="0 0 120 120" aria-hidden="true"><circle class="track" cx="60" cy="60" r="52"/><circle class="val" id="ringVal" cx="60" cy="60" r="52"/></svg>
+          <div class="ring-text"><span id="score">0%</span><small>similarity</small></div>
+        </div>
+        <div>
+          <span class="pill" id="verdict"></span>
+          <p class="advice" id="advice"></p>
+          <p class="was" id="was" hidden></p>
+        </div>
+        <div class="actions">
+          <button class="btn" id="btnPdf" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="8" rx="2"/><path d="M7 14h10v7H7z"/></svg>Save as PDF</button>
+          <button class="btn" id="btnTxt" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Download .txt</button>
+          <button class="btn ghost" id="btnEdit" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Edit text</button>
+        </div>
       </div>
-      <div>
-        <span class="pill" id="verdict"></span>
-        <p class="advice" id="advice"></p>
-        <p class="facts" id="facts"></p>
-        <p class="was" id="was" hidden></p>
-      </div>
-      <div class="actions">
-        <button class="btn" id="btnEdit" type="button">Edit text</button>
-        <button class="btn" id="btnReport" type="button">Download report</button>
+      <div class="kpis">
+        <div class="kpi"><b id="kWords">0%</b><span>of your words found in a source</span></div>
+        <div class="kpi"><b id="kPass">0</b><span>matching passages</span></div>
+        <div class="kpi"><b id="kSrc">0</b><span>sources compared</span></div>
+        <div class="kpi"><b id="kCited">0</b><span>marked as cited</span></div>
       </div>
     </div>
 
     <div class="map">
-      <div class="map-label">Where the matches are in your text</div>
+      <div class="map-head"><span>Where the matches are in your text</span><span id="quoteNote"></span></div>
       <div class="strip" id="strip"></div>
+      <div class="srcs-head" aria-hidden="true"><span></span><span>Source</span><span class="h-sim">Similarity</span><span class="h-v">Verdict</span></div>
       <div class="srcs" id="srcList"></div>
       <div class="filter-note" id="filterNote"></div>
     </div>
@@ -473,10 +606,35 @@
 
 <footer>
   <div class="wrap foot">
-    <span>Made by Pranav · 2026</span>
-    <a href="https://github.com/pranav-0712/semantic-plagiarism-detector" target="_blank" rel="noopener">Source on GitHub</a>
+    <span class="brand">
+      <svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true"><path class="lens" d="M16 9.7A7 7 0 0 1 16 22.3A7 7 0 0 1 16 9.7Z"/><circle cx="13" cy="16" r="7" fill="none" stroke-width="1.8"/><circle cx="19" cy="16" r="7" fill="none" stroke-width="1.8"/></svg>
+      Semantic Plagiarism Detector
+    </span>
+    <a href="https://github.com/pranav-0712/semantic-plagiarism-detector" target="_blank" rel="noopener">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      Source code
+    </a>
   </div>
 </footer>
+
+<!-- Guided demo -->
+<div class="tour" id="tour" hidden>
+  <div class="tour-catch" id="tourCatch"></div>
+  <div class="tour-hole" id="tourHole" hidden></div>
+  <div class="tour-pop" id="tourPop" role="dialog" aria-modal="true" aria-labelledby="tourTitle" aria-describedby="tourBody">
+    <div class="tour-top">
+      <span class="tour-step" id="tourStep"></span>
+      <button class="tour-x" id="tourClose" type="button" aria-label="Close the demo">×</button>
+    </div>
+    <h3 id="tourTitle"></h3>
+    <p id="tourBody"></p>
+    <div class="tour-foot">
+      <div class="tour-dots" id="tourDots" aria-hidden="true"></div>
+      <button class="btn sm" id="tourBack" type="button">Back</button>
+      <button class="btn sm primary" id="tourNext" type="button">Next</button>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast" role="status"></div>
 <noscript><p class="wrap" style="padding:16px 28px">This page needs JavaScript to check text.</p></noscript>
@@ -507,6 +665,7 @@
   const THRESHOLD_MEDIUM = 0.10;
   const COLORS = 6;
   const STORE_KEY = 'spd-state-v1';
+  const RING = 2 * Math.PI * 52;
 
   class Stack {
     constructor() { this.items = []; }
@@ -660,9 +819,11 @@
    * Page state and helpers
    * ===================================================================== */
   const $ = id => document.getElementById(id);
-  const state = { sources: [], active: null, docName: 'your text', an: null, sc: null, base: null, passages: [], cited: [], filter: null, date: null };
+  const state = { sources: [], active: null, docName: 'Your text', an: null, sc: null, base: null, passages: [], cited: [], filter: null, date: null };
   let uid = 0;
   let busy = false;
+  const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const smooth = reduceMotion ? 'auto' : 'smooth';
 
   const makeSource = (name, text) => ({ id: ++uid, name: name || '', text: text || '' });
   const activeSource = () => state.sources.find(s => s.id === state.active);
@@ -673,6 +834,13 @@
   const pct2 = sim => (sim * 100).toFixed(2) + '%';
   const esc = s => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const shorten = (s, n) => { s = s.replace(/\.(txt|md|text)$/i, ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
+  const icon = d => '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
+  const ICON = {
+    show: icon('<circle cx="12" cy="12" r="3"/><path d="M3 12h3M18 12h3M12 3v3M12 18v3"/>'),
+    copy: icon('<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>'),
+    cite: icon('<path d="M20 6 9 17l-5-5"/>'),
+    undo: icon('<path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>')
+  };
 
   // A source without a name is called after its first few words.
   function displayName(s) {
@@ -687,7 +855,7 @@
     t.textContent = msg;
     t.classList.add('show');
     clearTimeout(toast.timer);
-    toast.timer = setTimeout(() => t.classList.remove('show'), 2200);
+    toast.timer = setTimeout(() => t.classList.remove('show'), 2400);
   }
 
   function chip(text, cls, style) {
@@ -717,7 +885,7 @@
       const d = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
       if (!d || (!d.doc && !(d.sources || []).some(s => s.text))) return false;
       $('docText').value = d.doc || '';
-      state.docName = d.docName || 'your text';
+      state.docName = d.docName || 'Your text';
       state.sources = (d.sources && d.sources.length ? d.sources : [{}]).map(s => makeSource(s.name, s.text));
       state.active = state.sources[0].id;
       if (d.n) $('optN').value = d.n;
@@ -836,8 +1004,9 @@
   /* =====================================================================
    * Checking
    * ===================================================================== */
-  function runCheck() {
-    if (busy) return;
+  // Returns false if the check could not start. onDone replaces the default scroll.
+  function startCheck(onDone) {
+    if (busy) return false;
     const docText = $('docText').value;
     const n = parseInt($('optN').value, 10);
     const ignoreCommon = $('optStop').checked;
@@ -846,15 +1015,15 @@
       .map(s => ({ name: displayName(s), text: s.text, color: colorOf(s) }))
       .filter(s => s.text.trim());
 
-    if (!docText.trim()) { showError('Paste the text you want to check first.'); $('docText').focus(); return; }
-    if (!sources.length) { showError('Add at least one source to compare your text with.'); $('srcText').focus(); return; }
+    if (!docText.trim()) { showError('Paste the text you want to check first.'); $('docText').focus(); return false; }
+    if (!sources.length) { showError('Add at least one source to compare your text with.'); $('srcText').focus(); return false; }
 
     const an = analyse(docText, sources, n, ignoreCommon, ignoreQuotes);
     if (!an.docNG.length) {
       showError(an.allNG.length
         ? 'All of your text is inside quotation marks, so there is nothing left to check. Turn off "Skip text in quotation marks" in Options.'
         : 'Your text is too short. It needs at least ' + n + ' words after common words are removed.');
-      return;
+      return false;
     }
     showError('');
     state.an = an;
@@ -863,7 +1032,12 @@
     state.date = new Date();
     state.base = score(an, []);
     $('explain').open = false;
-    playProgress(an, () => { refresh(); $('results').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+    playProgress(an, () => {
+      refresh(true);
+      if (onDone) onDone();
+      else $('results').scrollIntoView({ behavior: smooth, block: 'start' });
+    });
+    return true;
   }
 
   // Shows each stage with a tick, then reveals the results.
@@ -884,7 +1058,7 @@
     const ul = $('progressList');
     ul.innerHTML = steps.map(s => '<li><span class="tick"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--on-accent)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>' + esc(s) + '</li>').join('');
     $('progress').hidden = false;
-    $('progress').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (!tour.on) $('progress').scrollIntoView({ behavior: smooth, block: 'nearest' });
     const items = Array.from(ul.children);
     let k = 0;
     (function next() {
@@ -901,13 +1075,14 @@
   }
 
   // Recalculate with the current cited passages and filter, then redraw.
-  function refresh() {
+  function refresh(fresh) {
     const an = state.an;
     if (!an) return;
     state.sc = score(an, state.cited);
     state.passages = buildPassages(an, state.sc);
+    const wasHidden = $('results').hidden;
     $('results').hidden = false;
-    renderSummary();
+    renderSummary(fresh || wasHidden);
     renderSources();
     renderDoc();
     renderPassages();
@@ -916,40 +1091,57 @@
 
   const visiblePassages = () => state.filter === null ? state.passages : state.passages.filter(p => p.src === state.filter);
 
-  function renderSummary() {
-    const sc = state.sc;
+  function renderSummary(animate) {
+    const an = state.an, sc = state.sc;
     const top = sc.ranked[0];
     const v = verdict(top.sim);
     const topPass = state.passages.filter(p => p.src === top.i).length;
+
+    // Score ring
+    const ring = $('ringVal');
+    ring.style.strokeDasharray = RING.toFixed(2);
+    if (animate && !reduceMotion) {
+      ring.style.transition = 'none';
+      ring.style.strokeDashoffset = RING;
+      void getComputedStyle(ring).strokeDashoffset;
+      ring.style.transition = '';
+    }
+    ring.style.strokeDashoffset = RING * (1 - Math.min(1, top.sim));
+    ring.style.stroke = v.color;
+    ring.style.opacity = top.sim > 0 ? 1 : 0;
     $('score').textContent = pct1(top.sim);
-    $('score').style.color = v.color;
     $('verdict').className = 'pill ' + v.cls;
     $('verdict').textContent = v.label;
 
     let advice;
     if (top.sim >= THRESHOLD_HIGH) advice = 'Most of the matching text comes from ' + top.name + '. Quote and cite the passages below, or rewrite them in your own words.';
-    else if (top.sim >= THRESHOLD_MEDIUM) advice = plural(topPass, 'passage') + (topPass === 1 ? ' matches ' : ' match ') + top.name + '. Read ' + (topPass === 1 ? 'it' : 'them') + ' below and quote, cite or rewrite where needed.';
-    else if (top.sim > 0) advice = 'Only short phrases match. That is common when texts cover the same topic, so it is usually fine.';
-    else advice = state.cited.length ? 'Every matching passage is now marked as cited.' : 'No copied passages were found. Your text looks original.';
+    else if (top.sim >= THRESHOLD_MEDIUM) advice = plural(topPass, 'passage') + (topPass === 1 ? ' matches ' : ' match ') + top.name + '. Review ' + (topPass === 1 ? 'it' : 'them') + ' below and quote, cite or rewrite where needed.';
+    else if (top.sim > 0) advice = 'Only short phrases match. This is common when texts cover the same topic and is usually fine.';
+    else advice = state.cited.length ? 'Every matching passage is marked as cited.' : 'No copied passages were found. Your text looks original.';
     $('advice').textContent = advice;
-
-    // Share of your words that appear in any source.
-    const ranges = state.passages.map(p => [p.s, p.e]);
-    const covered = state.an.tokens.filter(t => ranges.some(r => t.s >= r[0] && t.e <= r[1])).length;
-    const facts = [plural(state.passages.length, 'matching passage'), Math.round(covered / state.an.tokens.length * 100) + '% of your words appear in a source'];
-    if (state.an.quotes.length) facts.push(plural(state.an.quotes.length, 'quotation') + ' skipped');
-    $('facts').textContent = facts.join(' · ');
 
     const before = state.base.ranked[0].sim;
     $('was').hidden = !state.cited.length;
-    $('was').textContent = 'Was ' + pct1(before) + ' before ' + plural(state.cited.length, 'passage') + (state.cited.length === 1 ? ' was' : ' were') + ' marked as cited.';
+    $('was').textContent = 'Down from ' + pct1(before) + ' after ' + plural(state.cited.length, 'passage') + (state.cited.length === 1 ? ' was' : ' were') + ' marked as cited.';
+
+    // Key figures
+    const ranges = state.passages.map(p => [p.s, p.e]);
+    const covered = an.tokens.filter(t => ranges.some(r => t.s >= r[0] && t.e <= r[1])).length;
+    $('kWords').textContent = Math.round(covered / an.tokens.length * 100) + '%';
+    $('kPass').textContent = state.passages.length;
+    $('kSrc').textContent = an.srcs.length;
+    $('kCited').textContent = state.cited.length;
+    $('quoteNote').textContent = an.quotes.length ? plural(an.quotes.length, 'quotation') + ' skipped as already cited' : '';
+
+    // Heading for the printed report
+    const opts = [an.n + '-word phrases', an.ignoreCommon ? 'common words ignored' : 'common words included', an.ignoreQuotes ? 'quotations skipped' : 'quotations included'];
+    $('printMeta').textContent = state.docName + ' · ' + plural(an.tokens.length, 'word') + ' · ' + plural(an.srcs.length, 'source') + ' · ' + opts.join(', ') + ' · ' + state.date.toLocaleString();
   }
 
   function renderSources() {
     const sc = state.sc;
     const len = state.an.docText.length || 1;
 
-    // The strip: one coloured mark per passage, placed where it sits in the text.
     const strip = $('strip');
     strip.innerHTML = '';
     visiblePassages().forEach(p => {
@@ -959,7 +1151,7 @@
       b.style.width = ((p.e - p.s) / len * 100) + '%';
       b.style.background = 'var(--d' + p.src + ')';
       b.title = p.name + ': ' + plural(p.words, 'word');
-      b.setAttribute('aria-label', 'Passage from ' + p.name);
+      b.setAttribute('aria-label', 'Go to passage from ' + p.name);
       b.addEventListener('click', () => focusPassage(p.id, true));
       strip.appendChild(b);
     });
@@ -974,7 +1166,6 @@
       strip.appendChild(b);
     });
 
-    // Ranked sources. Clicking one shows only its passages.
     const list = $('srcList');
     list.innerHTML = '';
     sc.ranked.forEach((r, k) => {
@@ -1002,7 +1193,7 @@
     const f = sc.list.find(r => r.i === state.filter);
     $('filterNote').innerHTML = f
       ? 'Showing only ' + esc(f.name) + '. <button class="linkish" type="button" id="showAll">Show all sources</button>'
-      : sc.ranked.length > 1 ? 'Click a source to see only its passages.' : '';
+      : sc.ranked.length > 1 ? 'Select a source to see only its passages.' : '';
     const all = $('showAll');
     if (all) all.addEventListener('click', () => { state.filter = null; refresh(); });
   }
@@ -1039,18 +1230,18 @@
       box.innerHTML = '<div class="empty"><span class="ok"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><p>Nothing to fix here.</p></div>';
     }
 
-    list.forEach(p => {
+    list.forEach((p, k) => {
       const card = document.createElement('article');
       card.className = 'passage';
       card.id = 'pass-' + p.id;
       card.innerHTML =
-        '<div class="p-head"><i class="dot" style="background:var(--d' + p.src + ')"></i><b></b><span class="w">' + plural(p.words, 'word') + '</span></div>' +
+        '<div class="p-head"><span class="n">' + (k + 1) + '</span><i class="dot" style="background:var(--d' + p.src + ')"></i><b></b><span class="w">' + plural(p.words, 'word') + '</span></div>' +
         '<div class="p-mine" style="border-left-color:var(--d' + p.src + ')"></div>' +
         '<div class="p-from"><span class="lbl">In the source</span><span class="ctx"></span></div>' +
         '<div class="p-actions">' +
-          '<button class="btn sm" type="button" data-a="show">Show in text</button>' +
-          '<button class="btn sm" type="button" data-a="copy">Copy as quote</button>' +
-          '<button class="btn sm soft" type="button" data-a="cite">Mark as cited</button>' +
+          '<button class="btn sm" type="button" data-a="show">' + ICON.show + 'Show in text</button>' +
+          '<button class="btn sm" type="button" data-a="copy">' + ICON.copy + 'Copy as quote</button>' +
+          '<button class="btn sm soft" type="button" data-a="cite">' + ICON.cite + 'Mark as cited</button>' +
         '</div>';
       card.querySelector('b').textContent = p.name;
       card.querySelector('.p-mine').textContent = p.text;
@@ -1066,7 +1257,7 @@
       card.querySelector('[data-a="cite"]').addEventListener('click', () => {
         state.cited.push({ s: p.s, e: p.e, text: p.text, name: p.name, src: p.src });
         refresh();
-        toast('Marked as cited. Score updated.');
+        toast('Marked as cited. The score has been updated.');
       });
       box.appendChild(card);
     });
@@ -1079,10 +1270,10 @@
       state.cited.forEach((c, k) => {
         const card = document.createElement('article');
         card.className = 'passage is-cited';
-        card.innerHTML = '<div class="p-head"><i class="dot" style="background:var(--d' + c.src + ')"></i><b></b><span class="w"><button class="btn sm ghost" type="button">Undo</button></span></div><div class="p-mine"></div>';
+        card.innerHTML = '<div class="p-head"><i class="dot" style="background:var(--d' + c.src + ')"></i><b></b><span class="w"><button class="btn sm ghost" type="button">' + ICON.undo + 'Undo</button></span></div><div class="p-mine"></div>';
         card.querySelector('b').textContent = c.name;
         card.querySelector('.p-mine').textContent = c.text;
-        card.querySelector('button').addEventListener('click', () => { state.cited.splice(k, 1); refresh(); toast('Passage counted again.'); });
+        card.querySelector('button').addEventListener('click', () => { state.cited.splice(k, 1); refresh(); toast('The passage counts towards the score again.'); });
         box.appendChild(card);
       });
     }
@@ -1100,8 +1291,8 @@
     const view = $('docView');
     const m = view.querySelector('mark[data-p="' + id + '"]');
     if (!m) return;
-    view.scrollTo({ top: m.offsetTop - view.clientHeight / 3, behavior: 'smooth' });
-    if (window.innerWidth <= 960) view.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    view.scrollTo({ top: m.offsetTop - view.clientHeight / 3, behavior: smooth });
+    if (window.innerWidth <= 960) view.scrollIntoView({ behavior: smooth, block: 'start' });
     view.querySelectorAll('mark[data-p="' + id + '"]').forEach(flash);
   }
 
@@ -1109,7 +1300,7 @@
     const card = $('pass-' + id);
     if (!card) return;
     const box = $('passages');
-    box.scrollTo({ top: card.offsetTop - box.offsetTop - 8, behavior: 'smooth' });
+    box.scrollTo({ top: card.offsetTop - box.offsetTop - 8, behavior: smooth });
     flash(card);
     if (alsoMark) focusMark(id);
   }
@@ -1129,11 +1320,11 @@
     ta.style.opacity = '0';
     document.body.appendChild(ta);
     ta.select();
-    try { document.execCommand('copy'); done(); } catch (e) { toast('Copy is not available in this browser.'); }
+    try { document.execCommand('copy'); done(); } catch (e) { toast('Copying is not available in this browser.'); }
     ta.remove();
   }
 
-  /* ---------------- "How this score was calculated" ---------------- */
+  /* ---------------- How this score was calculated ---------------- */
   function renderTrace() {
     const an = state.an, sc = state.sc;
     const focus = sc.list.find(r => r.i === state.filter) || sc.ranked[0];
@@ -1195,8 +1386,8 @@
       : '<span style="color:var(--ink-3)">Only one source, so there was nothing to sort.</span>';
   }
 
-  /* ---------------- Report ---------------- */
-  function downloadReport() {
+  /* ---------------- Plain-text report ---------------- */
+  function downloadTxt() {
     const an = state.an, sc = state.sc;
     if (!an) return;
     const line = '-'.repeat(64);
@@ -1318,7 +1509,7 @@ divide-and-conquer algorithms with average time complexity of O(n log n).`],
 
   function clearAll() {
     $('docText').value = '';
-    state.docName = 'your text';
+    state.docName = 'Your text';
     state.sources = [makeSource()];
     state.active = state.sources[0].id;
     state.an = null;
@@ -1326,6 +1517,165 @@ divide-and-conquer algorithms with average time complexity of O(n log n).`],
     if (!busy) $('progress').hidden = true;
     renderTabs(); syncEditor(); showError('');
     try { localStorage.removeItem(STORE_KEY); } catch (e) { /* ignore */ }
+  }
+
+  /* =====================================================================
+   * Quick demo: a short guided walk-through of the page
+   * ===================================================================== */
+  const tour = { on: false, i: 0, busy: false, override: null, back: null, raf: 0 };
+  const isNarrow = () => window.innerWidth <= 640;
+  const hasContent = () => !!($('docText').value.trim() || state.sources.some(s => s.text.trim()));
+
+  const STEPS = [
+    {
+      label: 'Quick demo', title: 'See how it works',
+      body: () => 'Five short steps, using an example essay and three sources.' + (hasContent() ? ' The text currently in the boxes will be replaced by the example.' : ''),
+      next: 'Start'
+    },
+    { target: '#docPane', title: 'Paste your text', body: 'Paste the essay or article you want to check, or open a .txt file. For this demo, an example essay is already filled in.' },
+    { target: '#srcPane', title: 'Add your sources', body: 'Add every text it might have been copied from. Use “+ Add source”, or open several files at once. Each source gets its own colour.' },
+    { target: '#btnCheck', title: 'Run the check', body: 'Select “Check for copied text”, or press Ctrl + Enter. Select Run check to try it on the example.', next: 'Run check', action: 'check' },
+    {
+      target: '#summary', title: 'Read the result',
+      body: () => {
+        const t = state.sc.ranked[0];
+        return 'The example scores ' + pct1(t.sim) + ': ' + verdict(t.sim).label.toLowerCase() + '. The advice says what to do next, and the figures show how much of the text was found in a source.';
+      }
+    },
+    {
+      target: () => document.querySelector('#passages .passage') || $('passages'), title: 'Fix each passage',
+      body: 'Each copied passage is shown next to where it came from. Copy it as a quote with its source, or mark it as cited and the score updates. Save the report as a PDF when you are done.',
+      next: 'Finish'
+    }
+  ];
+
+  function tourTarget() {
+    if (tour.override) return tour.override;
+    const t = STEPS[tour.i].target;
+    if (!t) return null;
+    return typeof t === 'function' ? t() : document.querySelector(t);
+  }
+
+  function startTour() {
+    if (busy || tour.on) return;
+    tour.on = true;
+    tour.i = 0;
+    tour.busy = false;
+    tour.override = null;
+    tour.back = document.activeElement;
+    $('tour').hidden = false;
+    renderTour();
+  }
+
+  function endTour(finished) {
+    if (!tour.on) return;
+    tour.on = false;
+    tour.override = null;
+    $('tour').hidden = true;
+    if (tour.back && tour.back.focus) tour.back.focus({ preventScroll: true });
+    if (finished) toast('That’s it. Now try it with your own text.');
+  }
+
+  function renderTour() {
+    const s = STEPS[tour.i];
+    const total = STEPS.length - 1;
+    $('tourStep').textContent = tour.i === 0 ? s.label : 'Step ' + tour.i + ' of ' + total;
+    $('tourTitle').textContent = s.title;
+    $('tourBody').textContent = typeof s.body === 'function' ? s.body() : s.body;
+    $('tourBack').hidden = tour.i <= 1;
+    const nx = $('tourNext');
+    nx.disabled = false;
+    nx.textContent = s.next || 'Next';
+    $('tourDots').innerHTML = tour.i === 0 ? '' : STEPS.slice(1).map((_, k) => '<i class="' + (k + 1 === tour.i ? 'on' : '') + '"></i>').join('');
+    const el = tourTarget();
+    if (el) el.scrollIntoView({ behavior: smooth, block: isNarrow() ? 'start' : 'center' });
+    placeTour();
+    setTimeout(placeTour, 450);
+    nx.focus({ preventScroll: true });
+  }
+
+  // Positions the highlight around the target and the card next to it.
+  function placeTour() {
+    if (!tour.on) return;
+    const el = tourTarget();
+    const hole = $('tourHole'), pop = $('tourPop'), dim = $('tourCatch');
+    pop.classList.remove('center', 'sheet');
+    if (!el) {
+      hole.hidden = true;
+      dim.classList.add('dim');
+      pop.classList.add('center');
+      pop.style.top = pop.style.left = '';
+      return;
+    }
+    dim.classList.remove('dim');
+    hole.hidden = false;
+    const r = el.getBoundingClientRect();
+    const pad = 8, gap = 12, m = 12, vw = window.innerWidth, vh = window.innerHeight;
+    const mTop = $('siteHeader').offsetHeight + 12;   // keep the card below the sticky header
+    hole.style.top = (r.top - pad) + 'px';
+    hole.style.left = (r.left - pad) + 'px';
+    hole.style.width = (r.width + pad * 2) + 'px';
+    hole.style.height = (r.height + pad * 2) + 'px';
+    if (isNarrow()) {
+      pop.classList.add('sheet');
+      pop.style.top = pop.style.left = '';
+      return;
+    }
+    const pw = pop.offsetWidth, ph = pop.offsetHeight;
+    let top, left;
+    if (r.bottom + pad + gap + ph <= vh - m) { top = r.bottom + pad + gap; left = r.left; }
+    else if (r.top - pad - gap - ph >= mTop) { top = r.top - pad - gap - ph; left = r.left; }
+    else if (r.right + pad + gap + pw <= vw - m) { left = r.right + pad + gap; top = r.top; }
+    else if (r.left - pad - gap - pw >= m) { left = r.left - pad - gap - pw; top = r.top; }
+    else { top = vh - ph - m; left = r.left; }
+    pop.style.top = Math.max(mTop, Math.min(top, vh - ph - m)) + 'px';
+    pop.style.left = Math.max(m, Math.min(left, vw - pw - m)) + 'px';
+  }
+
+  function schedulePlace() {
+    if (!tour.on || tour.raf) return;
+    tour.raf = requestAnimationFrame(() => { tour.raf = 0; placeTour(); });
+  }
+
+  function tourNext() {
+    if (!tour.on || tour.busy) return;
+    const s = STEPS[tour.i];
+    if (tour.i === 0) {
+      loadExample();
+      $('results').hidden = true;
+      $('options').hidden = true;
+      tour.i = 1;
+      renderTour();
+      return;
+    }
+    if (s.action === 'check') {
+      tour.busy = true;
+      const nx = $('tourNext');
+      nx.disabled = true;
+      nx.textContent = 'Checking…';
+      $('tourBack').hidden = true;
+      const started = startCheck(() => {
+        tour.busy = false;
+        tour.override = null;
+        if (!tour.on) return;
+        tour.i++;
+        renderTour();
+      });
+      if (!started) { tour.busy = false; endTour(false); return; }
+      tour.override = $('progress');
+      tour.override.scrollIntoView({ behavior: smooth, block: 'center' });
+      placeTour();
+      return;
+    }
+    if (tour.i === STEPS.length - 1) { endTour(true); return; }
+    tour.i++;
+    renderTour();
+  }
+
+  function tourBack() {
+    if (!tour.on || tour.busy || tour.i <= 1) return;
+    tour.i--;
+    renderTour();
   }
 
   /* ---------------- Wiring ---------------- */
@@ -1337,11 +1687,12 @@ divide-and-conquer algorithms with average time complexity of O(n log n).`],
   $('srcFiles').addEventListener('change', e => { openSources(e.target.files); e.target.value = ''; });
   enableDrop($('docPane'), openDoc);
   enableDrop($('srcPane'), openSources);
-  $('btnCheck').addEventListener('click', runCheck);
+  $('btnCheck').addEventListener('click', () => startCheck());
   $('btnExample').addEventListener('click', loadExample);
   $('btnClear').addEventListener('click', clearAll);
-  $('btnReport').addEventListener('click', downloadReport);
-  $('btnEdit').addEventListener('click', () => { $('tool').scrollIntoView({ behavior: 'smooth', block: 'start' }); setTimeout(() => $('docText').focus({ preventScroll: true }), 400); });
+  $('btnTxt').addEventListener('click', downloadTxt);
+  $('btnPdf').addEventListener('click', () => window.print());
+  $('btnEdit').addEventListener('click', () => { $('tool').scrollIntoView({ behavior: smooth, block: 'start' }); setTimeout(() => $('docText').focus({ preventScroll: true }), 400); });
   $('btnOptions').addEventListener('click', e => {
     const open = $('options').hidden;
     $('options').hidden = !open;
@@ -1351,9 +1702,35 @@ divide-and-conquer algorithms with average time complexity of O(n log n).`],
     const m = e.target.closest('mark[data-p]');
     if (m) focusPassage(+m.dataset.p, false);
   });
+
+  $('btnTour').addEventListener('click', startTour);
+  $('btnTourTop').addEventListener('click', startTour);
+  $('tourNext').addEventListener('click', tourNext);
+  $('tourBack').addEventListener('click', tourBack);
+  $('tourClose').addEventListener('click', () => endTour(false));
+
   document.addEventListener('keydown', e => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); runCheck(); }
+    if (tour.on) {
+      if (e.key === 'Escape') { e.preventDefault(); endTour(false); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); tourNext(); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); tourBack(); }
+      else if (e.key === 'Tab') {
+        const f = Array.from($('tourPop').querySelectorAll('button')).filter(b => !b.hidden && !b.disabled);
+        if (!f.length) return;
+        e.preventDefault();
+        const i = f.indexOf(document.activeElement);
+        f[e.shiftKey ? (i <= 0 ? f.length - 1 : i - 1) : (i === f.length - 1 ? 0 : i + 1)].focus();
+      }
+      return;
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); startCheck(); }
   });
+
+  window.addEventListener('scroll', () => {
+    $('siteHeader').classList.toggle('scrolled', window.scrollY > 4);
+    schedulePlace();
+  }, { passive: true });
+  window.addEventListener('resize', schedulePlace);
 
   if (restore()) { renderTabs(); syncEditor(); }
   else clearAll();
